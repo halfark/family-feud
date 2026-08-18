@@ -1,0 +1,43 @@
+{
+  "name": "family-feud-skola",
+  "version": "1.0.0",
+  "description": "5 proti 5 / Family Feud – dvojjazyčná výuková soutěž pro ZŠ (CS + anglická ESL verze)",
+  "type": "commonjs",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "seed": "node seed.js",
+    "test": "node test/smoke.js"
+  },
+  "dependencies": {
+    "bcryptjs": "^2.4.3",
+    "better-sqlite3": "^11.3.0",
+    "cookie-parser": "^1.4.6",
+    "express": "^4.19.2",
+    "express-rate-limit": "^7.4.0",
+    "jsonwebtoken": "^9.0.2",
+    "nodemailer": "^6.9.14"
+  },
+  "engines": {
+    "node": ">=20"
+  },
+  "license": "MIT",
+  "keywords": [
+    "education",
+    "esl",
+    "quiz",
+    "family-feud",
+    "classroom",
+    "czech",
+    "teaching"
+  ],
+  "author": "Mgr. Vojtěch Přecechtěl <vojtechprecechtel@gmail.com>",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/halfark/family-feud.git"
+  },
+  "bugs": {
+    "url": "https://github.com/halfark/family-feud/issues"
+  },
+  "homepage": "https://github.com/halfark/family-feud#readme"
+}

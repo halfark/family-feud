@@ -1,0 +1,305 @@
+<!doctype html>
+<html lang="cs">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Moderátor / Host</title>
+<link rel="stylesheet" href="/style.css">
+<style>
+  .host-grid{display:grid;grid-template-columns:300px 1fr;gap:1rem;padding:1rem;max-width:1400px;margin:0 auto;align-items:start}
+  .qbtn{width:100%;text-align:left;padding:.5rem .7rem;background:transparent;border:none;border-left:3px solid transparent;
+    color:var(--muted);cursor:pointer;font-family:'Barlow Condensed',sans-serif;font-size:.92rem;line-height:1.3;transition:.15s}
+  .qbtn:hover{background:rgba(245,197,24,.06);color:#fff}
+  .qbtn.active{background:rgba(245,197,24,.12);color:var(--gold);border-left-color:var(--gold);font-weight:600}
+  .arow{display:flex;align-items:center;gap:.6rem;background:#0d1525;border:1px solid var(--line);
+    border-radius:7px;padding:.5rem .8rem;transition:.15s;cursor:pointer}
+  .arow:hover{border-color:var(--tile-line)}
+  .arow.on{border-color:var(--gold);background:rgba(245,197,24,.07)}
+  .arow .n{font-family:'Bebas Neue',sans-serif;font-size:1.3rem;color:var(--gold);width:22px;text-align:center}
+  .arow .t{flex:1;font-size:1.05rem;font-weight:600}
+  .arow .p{font-family:'Bebas Neue',sans-serif;font-size:1.3rem;color:var(--gold);width:36px;text-align:right}
+  .arow .k{font-size:.7rem;color:var(--faint);border:1px solid var(--line);border-radius:3px;padding:1px 5px}
+  .teamcard{background:#0d1525;border:2px solid var(--line);border-radius:8px;padding:.8rem;transition:.2s}
+  .teamcard.turn{border-color:var(--gold);box-shadow:0 0 0 3px rgba(245,197,24,.12)}
+  .bigscore{font-family:'Bebas Neue',sans-serif;font-size:2.4rem;color:var(--gold);text-align:center;line-height:1}
+  .strikebtn{font-family:'Bebas Neue',sans-serif;font-size:1.4rem;letter-spacing:2px;background:var(--red);
+    border:2px solid var(--red-br);color:#fff;border-radius:6px;padding:.55rem 1.4rem;cursor:pointer;transition:.15s}
+  .strikebtn:hover{background:var(--red-br);transform:scale(1.04)}
+  .conn{display:inline-flex;align-items:center;gap:.4rem;font-size:.82rem;color:var(--muted)}
+  .dot{width:8px;height:8px;border-radius:50%;background:#555}
+  .dot.on{background:var(--green-br);box-shadow:0 0 7px rgba(39,174,96,.7)}
+  .kbdhelp{font-size:.78rem;color:var(--faint);line-height:1.7}
+  .kbdhelp b{color:var(--muted);background:#0d1525;border:1px solid var(--line);border-radius:3px;padding:1px 5px;font-weight:600}
+  @media(max-width:900px){.host-grid{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<div class="topbar"><div class="topbar-in">
+  <span class="brand">Family Feud</span><span class="badge" data-i18n="ho_badge"></span>
+  <span class="conn"><span class="dot" id="dot"></span><span id="connTxt"></span></span>
+  <nav class="nav" id="nav"></nav>
+</div></div>
+
+<div class="host-grid">
+  <!-- ============ LEVÝ SLOUPEC ============ -->
+  <div style="display:flex;flex-direction:column;gap:1rem">
+    <div class="card">
+      <div class="card-title" data-i18n="ho_set"></div>
+      <select class="input" id="setpick" style="margin-bottom:.6rem"><option data-i18n="loading"></option></select>
+      <div id="setinfo" style="font-size:.82rem;color:var(--muted);margin-bottom:.6rem"></div>
+      <button class="btn btn-gold btn-sm" style="width:100%" onclick="openDisplay()" data-i18n="ho_opendisp"></button>
+      <p style="font-size:.75rem;color:var(--faint);margin-top:.5rem;line-height:1.4">
+        <span data-i18n="ho_disp_hint"></span></p>
+    </div>
+
+    <div class="card" style="padding:.6rem 0">
+      <div class="card-title" style="padding:0 1.25rem" data-i18n="ho_qlist"></div>
+      <div id="qlist" style="max-height:330px;overflow-y:auto"></div>
+    </div>
+
+    <div class="card">
+      <div class="card-title" data-i18n="ho_keys"></div>
+      <div class="kbdhelp">
+        <b>1</b>–<b>8</b> <span data-i18n="ho_k_reveal"></span><br>
+        <b>X</b> / <b>Space</b> <span data-i18n="ho_k_strike"></span><br>
+        <b>C</b> <span data-i18n="ho_k_clear"></span><br>
+        <b>Q</b> / <b>W</b> <span data-i18n="ho_k_award"></span><br>
+        <b>N</b> / <b>P</b> <span data-i18n="ho_k_nav"></span><br>
+        <b>R</b> <span data-i18n="ho_k_all"></span> · <b>T</b> <span data-i18n="ho_k_turn"></span><br>
+        <b>F</b> <span data-i18n="ho_k_sfx"></span>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============ PRAVÝ SLOUPEC ============ -->
+  <div style="display:flex;flex-direction:column;gap:1rem">
+    <div class="card">
+      <div style="display:flex;justify-content:space-between;align-items:center;gap:1rem;margin-bottom:.8rem">
+        <div class="card-title" style="margin:0" data-i18n="ho_current"></div>
+        <div style="display:flex;gap:.4rem">
+          <button class="btn btn-ghost btn-sm" onclick="prevQ()" data-i18n="ho_prev"></button>
+          <button class="btn btn-ghost btn-sm" onclick="nextQ()" data-i18n="ho_next"></button>
+        </div>
+      </div>
+      <div id="qtext" style="font-size:1.35rem;font-weight:700;margin-bottom:1rem;color:#fff;line-height:1.25">
+        </div>
+      <div id="arows" style="display:flex;flex-direction:column;gap:.4rem"></div>
+      <div style="display:flex;gap:.5rem;margin-top:1rem;flex-wrap:wrap;align-items:center">
+        <button class="btn btn-ghost btn-sm" onclick="revealAll()" data-i18n="ho_reveal_all"></button>
+        <button class="btn btn-ghost btn-sm" onclick="hideAll()" data-i18n="ho_hide_all"></button>
+        <span style="margin-left:auto;font-family:'Bebas Neue';font-size:1.6rem;color:var(--gold)">
+          <span data-i18n="ho_round"></span>: <span id="roundpts">0</span> <span data-i18n="ho_pts"></span></span>
+      </div>
+    </div>
+
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem">
+      <div class="card">
+        <div class="card-title" data-i18n="ho_strikes"></div>
+        <div style="display:flex;gap:.7rem;align-items:center;flex-wrap:wrap">
+          <button class="strikebtn" onclick="addStrike()" data-i18n="ho_strike_btn"></button>
+          <button class="btn btn-ghost btn-sm" onclick="clearStrikes()" data-i18n="ho_clear"></button>
+          <span style="font-family:'Bebas Neue';font-size:1.5rem;color:var(--red-br)" id="strikeTxt">0 / 3</span>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-title" data-i18n="ho_game"></div>
+        <div style="display:flex;gap:.4rem;flex-wrap:wrap">
+          <button class="btn btn-ghost btn-sm" onclick="toggleTurn()" data-i18n="ho_turn"></button>
+          <button class="btn btn-ghost btn-sm" onclick="showIntro()" data-i18n="ho_intro"></button>
+          <button class="btn btn-red btn-sm" onclick="resetGame()" data-i18n="ho_reset"></button>
+        </div>
+        <label style="display:block;margin-top:.6rem;font-size:.85rem;color:var(--muted);cursor:pointer">
+          <input type="checkbox" id="sfx" checked> <span data-i18n="ho_sfx"></span></label>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title" data-i18n="ho_scores"></div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem">
+        <div class="teamcard turn" id="tc1">
+          <input class="input" id="t1name" value="" oninput="pushState()" style="margin-bottom:.5rem;text-align:center;font-weight:700">
+          <div class="bigscore" id="t1score">0</div>
+          <div style="display:flex;gap:.25rem;margin:.5rem 0">
+            <button class="btn btn-ghost btn-sm" style="flex:1" onclick="adj(0,-10)">−10</button>
+            <button class="btn btn-ghost btn-sm" style="flex:1" onclick="adj(0,-1)">−1</button>
+            <button class="btn btn-ghost btn-sm" style="flex:1" onclick="adj(0,1)">+1</button>
+            <button class="btn btn-ghost btn-sm" style="flex:1" onclick="adj(0,10)">+10</button>
+          </div>
+          <button class="btn btn-green btn-sm" style="width:100%" onclick="awardRound(0)" data-i18n="ho_award1"></button>
+        </div>
+        <div class="teamcard" id="tc2">
+          <input class="input" id="t2name" value="" oninput="pushState()" style="margin-bottom:.5rem;text-align:center;font-weight:700">
+          <div class="bigscore" id="t2score">0</div>
+          <div style="display:flex;gap:.25rem;margin:.5rem 0">
+            <button class="btn btn-ghost btn-sm" style="flex:1" onclick="adj(1,-10)">−10</button>
+            <button class="btn btn-ghost btn-sm" style="flex:1" onclick="adj(1,-1)">−1</button>
+            <button class="btn btn-ghost btn-sm" style="flex:1" onclick="adj(1,1)">+1</button>
+            <button class="btn btn-ghost btn-sm" style="flex:1" onclick="adj(1,10)">+10</button>
+          </div>
+          <button class="btn btn-green btn-sm" style="width:100%" onclick="awardRound(1)" data-i18n="ho_award2"></button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="/i18n.js"></script>
+<script src="/app.js"></script>
+<script>
+// ================= STAV =================
+const S = {
+  setId:null, setTitle:'', questions:[], qi:-1,
+  revealed:[], strikes:0, scores:[0,0], names:["",""],
+  turn:0, phase:'intro', sfx:true
+};
+let ch, displayWin = null, playCounted = new Set();
+
+// ================= KANÁL =================
+function initChannel(){
+  ch = new BroadcastChannel('ff-game');
+  ch.onmessage = e => {
+    if (e.data.type === 'HELLO') { setConn(true); pushState(); }
+    if (e.data.type === 'BYE') setConn(false);
+  };
+  window.addEventListener('beforeunload', () => ch.postMessage({type:'HOST_GONE'}));
+}
+function setConn(on){
+  document.getElementById('dot').classList.toggle('on', on);
+  document.getElementById('connTxt').textContent = on ? t('ho_conn_on') : t('ho_conn_off');
+}
+function pushState(){
+  S.names = [document.getElementById('t1name').value || t('team1'),
+             document.getElementById('t2name').value || t('team2')];
+  ch?.postMessage({ type:'STATE', lang: LANG, s: JSON.parse(JSON.stringify(S)) });
+  renderHost();
+}
+function fx(kind){ if (S.sfx) ch?.postMessage({ type:'FX', kind }); }
+function openDisplay(){
+  displayWin = window.open('/display.html?lang='+LANG,'ff-display','width=1280,height=760');
+  setTimeout(pushState, 900);
+}
+
+// ================= NAČTENÍ SAD =================
+async function loadSets(){
+  const sel = document.getElementById('setpick');
+  try{
+    const { sets } = await api.get('/api/sets?sort=plays&' + langParam());
+    if(!sets.length){ sel.innerHTML = `<option value="">${t('ho_nosets')}</option>`; return; }
+    sel.innerHTML = `<option value="">${t('ho_pick')}</option>` + sets.map(s =>
+      `<option value="${s.id}">${escapeHtml(s.title)} · ${escapeHtml(s.grade)} (${s.question_count})</option>`).join('');
+    sel.onchange = () => sel.value && loadSet(sel.value);
+    const pre = new URLSearchParams(location.search).get('set');
+    if (pre) { sel.value = pre; loadSet(pre); }
+  }catch(e){ sel.innerHTML = `<option>${escapeHtml(e.message)}</option>`; }
+}
+
+async function loadSet(id){
+  try{
+    const { set } = await api.get('/api/sets/'+id);
+    S.setId = set.id; S.setTitle = set.title; S.questions = set.questions;
+    S.qi = -1; S.revealed = []; S.strikes = 0; S.phase = 'intro';
+    document.getElementById('setinfo').innerHTML =
+      `${escapeHtml(set.topic)} · ${escapeHtml(set.grade)} · ${set.questions.length} otázek · ▶ ${set.playCount}×`;
+    renderQList(); pushState();
+    ok(`${t('ho_loaded')}: ${set.title}`);
+  }catch(e){ err(e.message); }
+}
+
+function renderQList(){
+  document.getElementById('qlist').innerHTML = S.questions.map((q,i)=>
+    `<button class="qbtn ${i===S.qi?'active':''}" onclick="goQ(${i})">${i+1}. ${escapeHtml(q.question)}</button>`).join('');
+}
+
+// ================= HERNÍ AKCE =================
+function goQ(i){
+  if(i<0 || i>=S.questions.length) return;
+  S.qi=i; S.revealed=[]; S.strikes=0; S.phase='play';
+  if(S.setId && !playCounted.has(S.setId)){
+    playCounted.add(S.setId);
+    api.post(`/api/sets/${S.setId}/play`).catch(()=>{});
+  }
+  fx('newq'); pushState();
+}
+const nextQ = () => goQ(S.qi+1);
+const prevQ = () => goQ(S.qi-1);
+
+function toggle(i){
+  if(S.phase!=='play') return;
+  const q=S.questions[S.qi]; if(!q||!q.answers[i]) return;
+  const at=S.revealed.indexOf(i);
+  if(at>=0) S.revealed.splice(at,1); else { S.revealed.push(i); fx('reveal'); }
+  pushState();
+}
+function revealAll(){ if(!S.questions[S.qi])return; S.revealed=S.questions[S.qi].answers.map((_,i)=>i); fx('reveal'); pushState(); }
+function hideAll(){ S.revealed=[]; pushState(); }
+
+function addStrike(){ if(S.strikes>=3)return; S.strikes++; fx('strike'); pushState(); }
+function clearStrikes(){ S.strikes=0; pushState(); }
+
+function roundPts(){
+  const q=S.questions[S.qi]; if(!q) return 0;
+  return S.revealed.reduce((s,i)=> s + (q.answers[i]?.points||0), 0);
+}
+function awardRound(team){
+  const p=roundPts(); if(!p){ err(t('ho_zero')); return; }
+  S.scores[team]+=p; S.revealed=[]; S.strikes=0;
+  fx('score'); pushState(); ok(`+${p} ${t('ho_awarded')} ${S.names[team]}`);
+}
+function adj(team,d){ S.scores[team]=Math.max(0,S.scores[team]+d); pushState(); }
+function toggleTurn(){ S.turn = S.turn?0:1; pushState(); }
+function showIntro(){ S.phase='intro'; S.qi=-1; S.revealed=[]; S.strikes=0; pushState(); }
+function resetGame(){
+  if(!confirm(t('ho_reset_c'))) return;
+  S.scores=[0,0]; S.strikes=0; S.revealed=[]; pushState(); ok(t('ho_reset_ok'));
+}
+
+// ================= RENDER =================
+function renderHost(){
+  const q=S.questions[S.qi];
+  document.getElementById('qtext').textContent =
+    q ? q.question : (S.questions.length ? t('ho_pick_q') : t('ho_pick_set'));
+
+  document.getElementById('arows').innerHTML = q ? q.answers.map((a,i)=>{
+    const on=S.revealed.includes(i);
+    return `<div class="arow ${on?'on':''}" onclick="toggle(${i})">
+      <span class="n">${i+1}</span><span class="t">${escapeHtml(a.text)}</span>
+      <span class="p">${a.points}</span>
+      <span class="k">${on ? t('ho_shown') : t('ho_key')+' '+(i+1)}</span></div>`;
+  }).join('') : '';
+
+  document.getElementById('roundpts').textContent = roundPts();
+  document.getElementById('strikeTxt').textContent = `${S.strikes} / 3`;
+  document.getElementById('t1score').textContent = S.scores[0];
+  document.getElementById('t2score').textContent = S.scores[1];
+  document.getElementById('tc1').classList.toggle('turn', S.turn===0);
+  document.getElementById('tc2').classList.toggle('turn', S.turn===1);
+  document.querySelectorAll('.qbtn').forEach((b,i)=>b.classList.toggle('active', i===S.qi));
+}
+
+// ================= KLÁVESY =================
+document.addEventListener('keydown', e=>{
+  if(/^(INPUT|TEXTAREA|SELECT)$/.test(e.target.tagName)) return;
+  const k=e.key.toLowerCase();
+  if(k>='1'&&k<='8'){ e.preventDefault(); toggle(+k-1); return; }
+  const map={
+    'x':addStrike,' ':addStrike,'c':clearStrikes,'q':()=>awardRound(0),'w':()=>awardRound(1),
+    'n':nextQ,'p':prevQ,'r':revealAll,'t':toggleTurn,
+    'f':()=>{ const c=document.getElementById('sfx'); c.checked=!c.checked; S.sfx=c.checked;
+              toast(c.checked ? t('ho_sfx_on') : t('ho_sfx_off')); }
+  };
+  if(map[k]){ e.preventDefault(); map[k](); }
+});
+
+document.getElementById('sfx').onchange = e => { S.sfx = e.target.checked; };
+
+(async()=>{
+  await bootstrap('play');
+  document.getElementById('t1name').value = t('team1');
+  document.getElementById('t2name').value = t('team2');
+  S.names = [t('team1'), t('team2')];
+  setConn(false);
+  initChannel(); await loadSets(); renderHost();
+})();
+</script>
+</body>
+</html>

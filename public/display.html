@@ -1,0 +1,195 @@
+<!doctype html>
+<html lang="cs">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Game board / Herní tabule</title>
+<link rel="stylesheet" href="/style.css">
+<style>
+  body{overflow:hidden;background:radial-gradient(ellipse at 50% 25%,#1a3a7a 0%,#0A1628 62%)}
+  .dwrap{display:flex;flex-direction:column;height:100vh}
+
+  .dhead{display:flex;align-items:center;justify-content:space-between;gap:1rem;padding:.7rem 1.6rem;
+    background:linear-gradient(90deg,#0A1628,#12244A 50%,#0A1628);border-bottom:3px solid var(--gold);flex-shrink:0}
+  .dlogo{font-family:'Bebas Neue',sans-serif;font-size:clamp(1.3rem,2.4vw,2.1rem);letter-spacing:3px;color:var(--gold)}
+  .teams{display:flex;gap:1.2rem}
+  .tbox{background:var(--navy-3);border:2px solid var(--tile-line);border-radius:8px;padding:.3rem 1.4rem;
+    text-align:center;min-width:130px;transition:.25s}
+  .tbox.turn{border-color:var(--gold);box-shadow:0 0 22px rgba(245,197,24,.35)}
+  .tbox .tn{font-size:.8rem;font-weight:600;letter-spacing:2px;color:var(--gold);text-transform:uppercase;
+    white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:180px}
+  .tbox .tv{font-family:'Bebas Neue',sans-serif;font-size:clamp(1.6rem,3vw,2.6rem);line-height:1;color:#fff}
+  .sx{display:flex;gap:9px}
+  .sx div{width:clamp(30px,3vw,42px);height:clamp(30px,3vw,42px);display:flex;align-items:center;justify-content:center;
+    font-family:'Bebas Neue',sans-serif;font-size:clamp(1.3rem,2.2vw,2rem);color:var(--red-br);
+    border:2px solid rgba(192,57,43,.35);border-radius:5px;opacity:.28;transition:.3s}
+  .sx div.on{opacity:1;background:rgba(192,57,43,.22);box-shadow:0 0 16px rgba(231,76,60,.6);animation:pop .5s}
+  @keyframes pop{0%,100%{transform:scale(1)}45%{transform:scale(1.28)}}
+
+  .qbanner{text-align:center;padding:1.1rem 2rem;background:rgba(18,36,74,.75);
+    border-bottom:2px solid var(--tile-line);flex-shrink:0}
+  .qlbl{font-size:.75rem;letter-spacing:4px;color:var(--gold);text-transform:uppercase;margin-bottom:.3rem}
+  .qtxt{font-size:clamp(1.2rem,2.9vw,2.3rem);font-weight:700;color:#fff;line-height:1.2;max-width:1100px;margin:0 auto}
+
+  .board{flex:1;display:grid;grid-template-columns:1fr 1fr;grid-auto-rows:1fr;gap:clamp(6px,.9vh,14px);
+    padding:clamp(8px,1.4vh,20px) clamp(12px,2vw,32px);max-width:1400px;margin:0 auto;width:100%;min-height:0}
+  .board.one-col{grid-template-columns:1fr}
+  .tile{background:var(--tile);border:2px solid var(--tile-line);border-radius:9px;display:flex;
+    align-items:center;overflow:hidden;position:relative;min-height:0}
+  .tile .tn{font-family:'Bebas Neue',sans-serif;font-size:clamp(1.4rem,3vw,2.4rem);color:var(--gold);
+    width:clamp(46px,5vw,74px);text-align:center;flex-shrink:0;border-right:2px solid var(--tile-line);
+    align-self:stretch;display:flex;align-items:center;justify-content:center}
+  .tile .ta{flex:1;padding:0 clamp(.6rem,1.5vw,1.3rem);font-size:clamp(1rem,2.3vw,1.9rem);font-weight:700;
+    letter-spacing:1px;text-transform:uppercase;color:transparent;line-height:1.15}
+  .tile .tp{font-family:'Bebas Neue',sans-serif;font-size:clamp(1.3rem,2.8vw,2.2rem);color:var(--gold);
+    padding:0 clamp(.6rem,1.4vw,1.3rem);opacity:0;transition:opacity .25s}
+  .tile.on{background:var(--tile-on);border-color:var(--gold);animation:flip .45s ease}
+  .tile.on .ta{color:#fff}
+  .tile.on .tp{opacity:1}
+  .tile.on .tn{color:var(--gold-lt);border-color:var(--gold)}
+  .tile.blank{opacity:.16}
+  @keyframes flip{0%{transform:rotateX(-88deg);opacity:.2}60%{transform:rotateX(12deg)}100%{transform:rotateX(0);opacity:1}}
+
+  .dfoot{text-align:center;padding:.5rem 1rem .9rem;flex-shrink:0}
+  .rtot{font-family:'Bebas Neue',sans-serif;font-size:clamp(1.2rem,2.4vw,2rem);letter-spacing:3px;color:var(--gold)}
+
+  .intro{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:.6rem;padding:2rem}
+  .intro .big{font-family:'Bebas Neue',sans-serif;font-size:clamp(3.5rem,13vw,10rem);letter-spacing:8px;
+    color:var(--gold);text-shadow:0 0 60px rgba(245,197,24,.4);line-height:.95;text-align:center}
+  .intro .sub{font-size:clamp(.9rem,2vw,1.4rem);letter-spacing:6px;color:var(--muted);text-transform:uppercase;text-align:center}
+
+  .xover{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;pointer-events:none;z-index:99}
+  .xover span{font-family:'Bebas Neue',sans-serif;font-size:24vw;color:var(--red-br);opacity:0;
+    text-shadow:0 0 80px rgba(231,76,60,.85)}
+  .xover span.go{animation:xs 1.1s ease forwards}
+  @keyframes xs{0%{opacity:0;transform:scale(.5)}18%{opacity:1;transform:scale(1.12)}
+    38%{transform:scale(1)}78%{opacity:1}100%{opacity:0;transform:scale(.92)}}
+
+  .offline{position:fixed;bottom:14px;left:14px;font-size:.8rem;color:var(--faint);letter-spacing:1px}
+</style>
+</head>
+<body>
+<div class="dwrap">
+  <div class="dhead">
+    <div class="dlogo" id="dlogo">Family Feud</div>
+    <div class="teams">
+      <div class="tbox turn" id="tb0"><div class="tn" id="tn0"></div><div class="tv" id="tv0">0</div></div>
+      <div class="tbox" id="tb1"><div class="tn" id="tn1"></div><div class="tv" id="tv1">0</div></div>
+    </div>
+    <div class="sx"><div id="x0">✗</div><div id="x1">✗</div><div id="x2">✗</div></div>
+  </div>
+
+  <div class="intro" id="intro">
+    <div class="big" id="bigready"></div>
+    <div class="sub" id="introsub"></div>
+  </div>
+
+  <div id="game" style="display:none;flex-direction:column;flex:1;min-height:0">
+    <div class="qbanner"><div class="qlbl" id="qlbl"></div><div class="qtxt" id="qtxt"></div></div>
+    <div class="board" id="board"></div>
+    <div class="dfoot"><div class="rtot" id="rtot"></div></div>
+  </div>
+</div>
+
+<div class="xover"><span id="xbig">✗</span></div>
+<div class="offline" id="off"></div>
+
+<script src="/i18n.js"></script>
+<script>
+const $ = id => document.getElementById(id);
+let prevRevealed = [], prevStrikes = 0, ac = null;
+
+// ---------- WebAudio efekty (bez externích souborů) ----------
+function tone(freq, dur, type='sine', vol=.18, delay=0){
+  try{
+    ac = ac || new (window.AudioContext||window.webkitAudioContext)();
+    const o=ac.createOscillator(), g=ac.createGain();
+    o.type=type; o.frequency.value=freq;
+    o.connect(g); g.connect(ac.destination);
+    const t=ac.currentTime+delay;
+    g.gain.setValueAtTime(0,t);
+    g.gain.linearRampToValueAtTime(vol,t+.02);
+    g.gain.exponentialRampToValueAtTime(.0001,t+dur);
+    o.start(t); o.stop(t+dur+.05);
+  }catch{}
+}
+const SFX = {
+  reveal(){ tone(660,.16,'square',.14); tone(990,.22,'square',.11,.07); },
+  strike(){ tone(180,.5,'sawtooth',.2); tone(120,.6,'sawtooth',.16,.05); },
+  score(){ [523,659,784,1047].forEach((f,i)=>tone(f,.22,'triangle',.15,i*.09)); },
+  newq(){ tone(440,.14,'triangle',.13); tone(587,.2,'triangle',.13,.11); },
+};
+
+// ---------- Kanál ----------
+function applyTexts(){
+  $('dlogo').textContent   = t('brand');
+  $('bigready').textContent= t('di_ready');
+  $('qlbl').textContent    = t('di_question');
+  $('off').textContent     = t('di_offline');
+  $('tn0').textContent     = t('team1');
+  $('tn1').textContent     = t('team2');
+  if(!$('introsub').textContent) $('introsub').textContent = t('di_waiting');
+  document.title = t('brand');
+  document.documentElement.lang = LANG;
+}
+applyTexts();
+
+const ch = new BroadcastChannel('ff-game');
+ch.onmessage = e => {
+  if(e.data.type==='STATE'){
+    if(e.data.lang && e.data.lang !== LANG){ setLang(e.data.lang); applyTexts(); }
+    setOnline(true); render(e.data.s);
+  }
+  if(e.data.type==='FX'){ SFX[e.data.kind]?.(); }
+  if(e.data.type==='HOST_GONE'){ setOnline(false); }
+};
+ch.postMessage({type:'HELLO'});
+setInterval(()=>ch.postMessage({type:'HELLO'}), 4000);
+window.addEventListener('beforeunload', ()=>ch.postMessage({type:'BYE'}));
+
+function setOnline(on){ $('off').style.display = on ? 'none' : 'block'; }
+setTimeout(()=>{ if($('off').style.display!=='none') $('introsub').textContent = t('di_hint'); }, 2500);
+
+// ---------- Render ----------
+function render(s){
+  $('tn0').textContent = s.names[0]; $('tn1').textContent = s.names[1];
+  $('tv0').textContent = s.scores[0]; $('tv1').textContent = s.scores[1];
+  $('tb0').classList.toggle('turn', s.turn===0);
+  $('tb1').classList.toggle('turn', s.turn===1);
+
+  for(let i=0;i<3;i++) $('x'+i).classList.toggle('on', i < s.strikes);
+  if(s.strikes > prevStrikes){ const x=$('xbig'); x.classList.remove('go'); void x.offsetWidth; x.classList.add('go'); }
+  prevStrikes = s.strikes;
+
+  const q = s.questions?.[s.qi];
+  if(s.phase!=='play' || !q){
+    $('intro').style.display='flex'; $('game').style.display='none';
+    $('introsub').textContent = s.setTitle || t('di_waiting');
+    prevRevealed=[]; return;
+  }
+  $('intro').style.display='none'; $('game').style.display='flex';
+  $('qtxt').textContent = q.question;
+
+  const n = q.answers.length;
+  const board = $('board');
+  board.classList.toggle('one-col', n <= 3);
+  board.innerHTML = q.answers.map((a,i)=>{
+    const on = s.revealed.includes(i);
+    const isNew = on && !prevRevealed.includes(i);
+    return `<div class="tile ${on?'on':''}" ${isNew?'style="animation-delay:0s"':''}>
+      <div class="tn">${i+1}</div><div class="ta">${esc(a.text)}</div><div class="tp">${a.points}</div></div>`;
+  }).join('');
+  prevRevealed = [...s.revealed];
+
+  const tot = s.revealed.reduce((t,i)=>t+(q.answers[i]?.points||0),0);
+  $('rtot').textContent = tot ? `${t('di_round')}: ${tot}` : '';
+}
+
+function esc(t){ return String(t).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c])); }
+
+// odemknutí zvuku po prvním kliknutí (autoplay policy)
+document.addEventListener('click', ()=>{ if(!ac) tone(1,.01,'sine',.001); }, {once:true});
+document.addEventListener('keydown', e=>{ if(e.key==='f'||e.key==='F11') return; });
+</script>
+</body>
+</html>

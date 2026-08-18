@@ -1,0 +1,76 @@
+<!doctype html>
+<html lang="cs">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>5 proti 5 / Family Feud — výuková soutěž</title>
+<link rel="stylesheet" href="/style.css">
+<style>
+  body{display:flex;flex-direction:column;min-height:100vh;
+    background:radial-gradient(ellipse at 50% 22%,#1a3a7a 0%,#0A1628 62%)}
+  .hero{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;
+    gap:.4rem;padding:2.5rem 1.25rem 1.5rem;text-align:center}
+  .hero h1{font-family:'Bebas Neue',sans-serif;font-size:clamp(2.6rem,8vw,5.5rem);letter-spacing:5px;
+    color:var(--gold);text-shadow:0 0 55px rgba(245,197,24,.35);line-height:1}
+  .hero .sl{font-size:clamp(.85rem,2vw,1.15rem);letter-spacing:6px;color:var(--muted);text-transform:uppercase}
+  .pick{font-size:.8rem;letter-spacing:4px;color:var(--faint);text-transform:uppercase;margin-top:2rem}
+  .choices{display:grid;grid-template-columns:repeat(auto-fit,minmax(290px,1fr));gap:1.4rem;
+    max-width:820px;margin:1.2rem auto 0;width:100%;padding:0 1.25rem}
+  .choice{background:var(--panel-2);border:2px solid var(--line);border-radius:14px;padding:1.8rem 1.5rem;
+    display:flex;flex-direction:column;gap:.7rem;cursor:pointer;transition:.2s;text-align:left}
+  .choice:hover{border-color:var(--gold);transform:translateY(-4px);box-shadow:0 12px 34px rgba(0,0,0,.4)}
+  .choice .flag{font-size:2.3rem;line-height:1}
+  .choice h2{font-family:'Bebas Neue',sans-serif;font-size:2rem;letter-spacing:2px;color:var(--gold)}
+  .choice .lvl{font-size:.75rem;letter-spacing:2px;color:var(--muted);text-transform:uppercase}
+  .choice p{font-family:'Barlow',sans-serif;font-size:.92rem;color:var(--muted);line-height:1.55;flex:1}
+  .choice .cnt{font-family:'Bebas Neue',sans-serif;font-size:1.15rem;color:var(--gold-lt);letter-spacing:1px}
+  .foot{text-align:center;padding:1.5rem 1.25rem 2.5rem;font-size:.85rem;color:var(--faint)}
+</style>
+</head>
+<body>
+<div class="hero">
+  <h1>5&nbsp;proti&nbsp;5 <span style="color:var(--faint);font-size:.5em">/</span> Family&nbsp;Feud</h1>
+  <div class="sl">Výuková soutěž · Classroom Game</div>
+  <div class="pick">Vyberte verzi · Choose your version</div>
+</div>
+
+<div class="choices">
+  <div class="choice" onclick="enter('cs')">
+    <div class="flag">🇨🇿</div>
+    <h2>5 proti 5</h2>
+    <div class="lvl">Česky · 1.–9. třída</div>
+    <p>Česká verze pro prvouku, přírodovědu, vlastivědu, češtinu a další předměty.</p>
+    <div class="cnt" id="cnt-cs">—</div>
+    <button class="btn btn-gold" style="width:100%">Vstoupit</button>
+  </div>
+
+  <div class="choice" onclick="enter('en')">
+    <div class="flag">🇬🇧</div>
+    <h2>Family Feud</h2>
+    <div class="lvl">English · Grades 3–9 · A1–B1</div>
+    <p>English version for ESL lessons — vocabulary, speaking and culture topics for grades 3–9.</p>
+    <div class="cnt" id="cnt-en">—</div>
+    <button class="btn btn-gold" style="width:100%">Enter</button>
+  </div>
+</div>
+
+<div class="foot">Jazyk lze kdykoli přepnout v horní liště. · You can switch the language anytime in the top bar.</div>
+
+<script src="/i18n.js"></script>
+<script>
+function enter(l){ setLang(l); location.href = '/catalog.html'; }
+
+fetch('/api/sets/meta').then(r=>r.json()).then(m=>{
+  const c = m.counts || {};
+  document.getElementById('cnt-cs').textContent = (c.cs || 0) + ' sad otázek';
+  document.getElementById('cnt-en').textContent = (c.en || 0) + ' question sets';
+}).catch(()=>{});
+
+// Kdo si už jazyk vybral, pokračuje rovnou — pokud nepřišel zpět přes ?pick=1
+if (!new URLSearchParams(location.search).has('pick')) {
+  const saved = getLang();
+  if (saved) location.replace('/catalog.html');
+}
+</script>
+</body>
+</html>

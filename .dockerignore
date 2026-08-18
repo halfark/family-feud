@@ -1,0 +1,10 @@
+node_modules/
+data/
+*.db
+*.db-wal
+*.db-shm
+.env
+.git/
+.github/
+npm-debug.log*
+*.tar.gz

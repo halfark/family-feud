@@ -1,0 +1,270 @@
+# 5 proti 5 / Family Feud — výuková soutěž pro ZŠ
+
+[![CI](https://github.com/halfark/family-feud/actions/workflows/ci.yml/badge.svg)](https://github.com/halfark/family-feud/actions/workflows/ci.yml)
+[![License: MIT](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
+![Node](https://img.shields.io/badge/node-%E2%89%A520-brightgreen)
+
+Dvojjazyčná webová aplikace ve stylu Family Feud pro použití ve třídě. Běží ve **dvou oknech**:
+okno moderátora (učitel) a okno pro žáky (projektor). Obsahuje databázi otázek pro ZŠ,
+hodnocení sad, statistiky odehraných her a moderovaný příspěvkový systém pro hosty.
+
+---
+
+## Rozcestník
+
+Na úvodní stránce `/` si uživatel vybere verzi:
+
+| Verze | Obsah |
+|---|---|
+| 🇨🇿 **5 proti 5** | česká verze, 1.–9. třída — prvouka, přírodověda, vlastivěda, čeština… |
+| 🇬🇧 **Family Feud** | anglická ESL verze, 3.–9. třída (A1–B1) — slovní zásoba, konverzace, reálie |
+
+Volba se pamatuje v prohlížeči; jazyk lze kdykoli přepnout tlačítkem 🇨🇿/🇬🇧 v horní liště.
+Přepnutí mění **celé rozhraní** (menu, panel moderátora, tabule pro žáky, admin, hlášky)
+i **nabídku sad** — česká a anglická databáze jsou oddělené a nemíchají se.
+Okno pro žáky přebírá jazyk od moderátora automaticky.
+
+---
+
+## Dvě okna
+
+| Okno | Adresa | Kdo to vidí |
+|---|---|---|
+| Rozcestník | `/` | volba jazyka / verze |
+| Katalog | `/catalog.html` | přehled sad pro zvolený jazyk |
+| Moderátor | `/host.html` | jen učitel — vidí odpovědi i body dopředu |
+| Žáci | `/display.html` | projektor — velká tabule, odpovědi skryté |
+
+Okna se propojí automaticky přes `BroadcastChannel` (stejný prohlížeč, stejný počítač).
+V okně moderátora klikni na **„Otevřít okno pro žáky“**, okno přetáhni na projektor a dej `F11`.
+
+> `BroadcastChannel` funguje mezi okny/záložkami **jednoho prohlížeče**. Pro dva různé
+> počítače by bylo potřeba dopsat WebSocket relay — dej vědět, přidám.
+
+### Klávesové zkratky moderátora
+
+| Klávesa | Akce |
+|---|---|
+| `1`–`8` | odhalit / skrýt odpověď |
+| `X` nebo `mezerník` | chyba (křížek) |
+| `C` | smazat chyby |
+| `Q` / `W` | přiřadit body kola týmu 1 / 2 |
+| `N` / `P` | další / předchozí otázka |
+| `R` | odhalit všechny odpovědi |
+| `T` | přepnout, kdo je na tahu |
+| `F` | zapnout/vypnout zvuk |
+
+Zvukové efekty se generují přes WebAudio (žádné externí soubory).
+V okně žáků jednou klikni, aby prohlížeč povolil přehrávání.
+
+---
+
+## Uživatelé a role
+
+| Role | Co může |
+|---|---|
+| Nepřihlášený | prohlížet a hrát veřejné sady, vidět statistiky |
+| Ověřený uživatel | + vytvářet sady (jdou ke schválení), hodnotit hvězdami a komentářem |
+| Admin | + schvalovat/zamítat, přepínat veřejné↔soukromé, mazat, spravovat uživatele |
+
+**Registrace vyžaduje CAPTCHA i ověření e-mailem.** CAPTCHA je serverová matematická úloha
+podepsaná HMAC — správná odpověď se nikdy neposílá do prohlížeče, takže ji nejde odečíst z DOM.
+Bez kliknutí na ověřovací odkaz se účet nepřihlásí.
+
+### Moderace
+
+Sada od běžného uživatele jde vždy do stavu `pending`. Admin ji v `/admin.html` může:
+
+- **schválit veřejně** — uvidí ji všichni v katalogu,
+- **schválit soukromě** — uvidí ji jen autor,
+- **zamítnout s důvodem** — autor důvod vidí u své sady.
+
+Editace už schválené sady ji vrací zpět ke schválení.
+
+---
+
+## Databáze otázek
+
+Seed naplní obě jazykové větve (**40 sad / 89 otázek**).
+
+### 🇨🇿 Česká — 15 sad, 35 otázek
+
+Ročníky 1.–3., 4.–5., 6.–9. třída. Témata: Přírodověda · Škola · Jídlo a zdraví · Sport ·
+Dopravní výchova · Člověk a společnost · Vlastivěda / Zeměpis · Přírodní vědy · Prvouka · Český jazyk
+
+### 🇬🇧 Anglická ESL — 25 sad, 54 otázek
+
+| Úroveň | Sad | Témata |
+|---|---|---|
+| `Grade 3–5 (A1)` | 8 | barvy a tvary, zvířata, jídlo a pití, rodina, školní potřeby, tělo, oblečení, dny a měsíce |
+| `Grade 6–7 (A1–A2)` | 8 | denní režim, volný čas, sport, bydlení, povolání, místa ve městě, počasí, svátky |
+| `Grade 8–9 (A2–B1)` | 9 | cestování, technologie, životní prostředí, zdraví, nakupování, pocity a povaha, nepravidelná slovesa, anglicky mluvící země, škola a plány do budoucna |
+
+Anglické sady jsou psané jako survey otázky („Name a pet.“, „What do you do in your free time?“),
+takže procvičují produktivní slovní zásobu, ne jen pasivní rozpoznávání.
+
+### Import / export JSON
+
+Na stránce `/create.html` lze sadu nahrát přetažením souboru:
+
+```json
+{
+  "title": "Zvířata kolem nás",
+  "topic": "Přírodověda",
+  "grade": "1.–3. třída",
+  "language": "cs",
+  "questions": [
+    { "question": "Jmenuj domácí zvíře.",
+      "answers": [
+        {"text": "Pes", "points": 40},
+        {"text": "Kočka", "points": 32}
+      ]}
+  ]
+}
+```
+
+Pravidla: 1–25 otázek na sadu, 2–8 odpovědí na otázku, body 1–99.
+Odpovědi se automaticky seřadí sestupně podle bodů.
+Pole `language` je `"cs"` nebo `"en"`; chybí-li nebo je neplatné, použije se `"cs"`.
+Tlačítko *Stáhnout vzor* dá šablonu podle právě zvoleného jazyka sady.
+
+---
+
+## Statistiky
+
+`/stats.html` (veřejné) — počet sad, celkem odehráno, počet učitelů, průměrné hodnocení,
+žebříček nejhranějších sad, rozpad podle témat, sloupcový graf her za posledních 30 dní.
+Každé spuštění otázky započítá hru (jednou za sadu za relaci, aby přeskakování otázek
+nenafukovalo čísla).
+
+---
+
+## Spuštění lokálně
+
+```bash
+npm install
+cp .env.example .env      # uprav JWT_SECRET a ADMIN_PASSWORD
+node seed.js              # naplní otázky + admina (idempotentní)
+npm start
+```
+
+Otevři `http://localhost:3000` — přivítá tě rozcestník CS/EN. Výchozí admin: `admin@skola.cz` / `admin123` — **hned změň**.
+
+Bez nastaveného SMTP se ověřovací odkazy vypisují do logu serveru, takže lze testovat bez mailu.
+
+---
+
+## Nasazení na Coolify
+
+1. Push do GitHubu, v Coolify vytvoř aplikaci z repozitáře (build pack: Dockerfile).
+2. **Persistent storage** → bind mount `/opt/family-feud-data` → `/data`.
+3. Environment variables podle `.env.example`. Nezapomeň na:
+   - `JWT_SECRET` — `openssl rand -hex 32` (bez něj se po restartu odhlásí všichni)
+   - `PUBLIC_URL` — např. `https://feud.prece.cz`, jde do ověřovacích odkazů
+   - `ADMIN_PASSWORD`
+4. V Cloudflare přidej DNS záznam pro subdoménu a nasměruj tunel na port 3000.
+
+> ⚠️ Dockerfile **záměrně neobsahuje `VOLUME`**. Anonymní svazek by se při redeployi
+> zahodil i s databází. Data drž výhradně na bind mountu.
+
+### Záloha
+
+```bash
+sqlite3 /opt/family-feud-data/feud.db ".backup '/opt/zalohy/feud-$(date +%F).db'"
+```
+
+---
+
+## Poznámka k Cloudflare Access
+
+Pokud dáš aplikaci za Cloudflare Access, přihlašování a registrace zvenčí přestanou dávat smysl
+(Access pustí dovnitř jen tebe). Pro veřejné příspěvky hostů nech doménu bez Access
+a spolehni se na vestavěnou registraci + CAPTCHA + moderaci.
+
+## Testy
+
+```bash
+npm test
+```
+
+Smoke test (`test/smoke.js`) nastartuje server nad dočasnou databází a projde
+38 kontrol: seed a jeho idempotence, dostupnost všech stránek, oddělení jazyků,
+CAPTCHA, ověření e-mailu, moderační frontu, oprávnění, hodnocení, statistiky a validaci.
+Nepotřebuje žádnou testovací knihovnu, takže projekt nemá dev závislosti.
+
+GitHub Actions (`.github/workflows/ci.yml`) navíc při každém pushi:
+
+- pustí smoke test na Node 20 i 22,
+- postaví Docker image,
+- nastartuje kontejner a ověří `/health` a naseedovaný obsah,
+- **restartuje kontejner a zkontroluje, že data přežila** — pojistka proti tomu,
+  aby se do Dockerfilu někdy vrátila direktiva `VOLUME`.
+
+---
+
+## Struktura projektu
+
+```
+├── server.js           Express server, REST API
+├── db.js               SQLite schéma + migrace
+├── auth.js             JWT, CAPTCHA, odesílání e-mailů
+├── seed.js             české sady + admin účet
+├── seed-en.js          anglické ESL sady
+├── public/
+│   ├── index.html      rozcestník CS / EN
+│   ├── catalog.html    katalog sad
+│   ├── host.html       okno moderátora
+│   ├── display.html    okno pro žáky
+│   ├── create.html     tvorba a import sad
+│   ├── admin.html      moderace
+│   ├── stats.html      statistiky
+│   ├── i18n.js         překlady a přepínání jazyka
+│   ├── app.js          API klient, přihlášení, navigace
+│   └── style.css
+├── test/smoke.js       smoke test
+└── Dockerfile          bez VOLUME (viz nasazení)
+```
+
+---
+
+## Přispívání
+
+Pull requesty vítány. Před odesláním prosím spusť `npm test`.
+
+Nové sady otázek se dají přidat dvěma způsoby:
+
+1. **Přes aplikaci** — `/create.html`, sadu pak schválí admin (doporučeno pro učitele).
+2. **Do seedu** — `seed.js` (české) nebo `seed-en.js` (anglické) pro sady,
+   které mají být součástí výchozí instalace.
+
+U anglických sad prosím drž značení úrovní `Grade 3–5 (A1)`, `Grade 6–7 (A1–A2)`,
+`Grade 8–9 (A2–B1)`, aby fungovalo filtrování.
+
+---
+
+## Licence
+
+MIT — viz [LICENSE](LICENSE).
+
+Název *Family Feud* je ochranná známka Fremantle; tento projekt je nekomerční
+výuková pomůcka bez jakékoli vazby na držitele známky a nepoužívá jeho grafiku,
+zvuky ani otázky.
+
+---
+
+## API
+
+| Metoda | Endpoint | Přístup |
+|---|---|---|
+| GET | `/api/auth/captcha` | veřejné |
+| POST | `/api/auth/register` · `/api/auth/login` · `/api/auth/logout` | veřejné |
+| GET | `/api/auth/verify?token=` | veřejné |
+| GET | `/api/sets?lang=cs\|en` · `/api/sets/meta?lang=` · `/api/sets/:id` | veřejné (respektuje viditelnost) |
+| POST/PUT/DELETE | `/api/sets` · `/api/sets/:id` | ověřený uživatel |
+| POST | `/api/sets/:id/play` | veřejné |
+| POST | `/api/sets/:id/rating` | ověřený uživatel |
+| GET | `/api/stats` | veřejné |
+| GET | `/api/admin/queue` · `/api/admin/users` | admin |
+| POST | `/api/admin/sets/:id/review` · `/api/admin/sets/:id/visibility` | admin |
+
+Rate limiting je aktivní na registraci, přihlášení, vytváření sad a hodnocení.

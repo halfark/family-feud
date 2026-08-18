@@ -1,0 +1,160 @@
+<!doctype html>
+<html lang="cs">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Administrace / Administration</title>
+<link rel="stylesheet" href="/style.css">
+<style>
+  .tabs{display:flex;gap:.4rem;margin-bottom:1.2rem;flex-wrap:wrap}
+  .tab{padding:.5rem 1.1rem;border:1px solid var(--line);border-radius:5px;background:transparent;
+    color:var(--muted);cursor:pointer;font-family:'Barlow Condensed',sans-serif;font-size:.9rem;
+    font-weight:600;letter-spacing:1px;text-transform:uppercase;transition:.15s}
+  .tab:hover{border-color:var(--gold);color:var(--gold)}
+  .tab.on{background:var(--gold);border-color:var(--gold);color:var(--navy)}
+  .rev{background:var(--panel-2);border:1px solid var(--line);border-radius:9px;padding:1.1rem;margin-bottom:1rem}
+  .qprev{background:#0d1525;border-radius:6px;padding:.7rem;margin:.7rem 0;max-height:230px;overflow-y:auto;font-size:.9rem}
+</style>
+</head>
+<body>
+<div class="topbar"><div class="topbar-in">
+  <span class="brand">Family Feud</span><span class="badge" data-i18n="ad_badge"></span>
+  <nav class="nav" id="nav"></nav>
+</div></div>
+
+<div class="wrap" style="padding-top:1.5rem;padding-bottom:3rem">
+  <div id="gate" style="display:none"><div class="empty" data-i18n="ad_gate"></div></div>
+
+  <div id="panel" style="display:none">
+    <div class="metrics" id="metrics" style="margin-bottom:1.5rem"></div>
+    <div class="tabs">
+      <button class="tab on" data-t="pending"  onclick="go('pending')"><span data-i18n="ad_pending"></span> <span id="cnt-pending"></span></button>
+      <button class="tab"    data-t="approved" onclick="go('approved')" data-i18n="ad_approved"></button>
+      <button class="tab"    data-t="rejected" onclick="go('rejected')" data-i18n="ad_rejected"></button>
+      <button class="tab"    data-t="users"    onclick="go('users')" data-i18n="ad_users"></button>
+    </div>
+    <div id="content"><div class="empty" data-i18n="loading"></div></div>
+  </div>
+</div>
+
+<script src="/i18n.js"></script>
+<script src="/app.js"></script>
+<script>
+let TAB='pending';
+
+async function loadMetrics(){
+  const st = await api.get('/api/stats');
+  const tt = st.totals;
+  document.getElementById('metrics').innerHTML = [
+    [t('ad_m_appr'), tt.sets_approved], [t('ad_m_pend'), tt.sets_pending],
+    [t('ad_m_plays'), tt.total_plays], [t('ad_m_users'), tt.users],
+    [t('ad_m_rating'), tt.avg_rating ? tt.avg_rating.toFixed(2)+' ★' : '—'],
+  ].map(([l,v])=>`<div class="metric"><div class="m-lbl">${l}</div><div class="m-val">${v ?? 0}</div></div>`).join('');
+  document.getElementById('cnt-pending').textContent = tt.sets_pending ? `(${tt.sets_pending})` : '';
+}
+
+function go(tab){
+  TAB=tab;
+  document.querySelectorAll('.tab').forEach(b=>b.classList.toggle('on', b.dataset.t===tab));
+  tab==='users' ? loadUsers() : loadQueue(tab);
+}
+
+async function loadQueue(status){
+  const el=document.getElementById('content');
+  el.innerHTML=`<div class="empty">${t('loading')}</div>`;
+  try{
+    const { sets } = await api.get('/api/admin/queue?status='+status);
+    if(!sets.length){ el.innerHTML=`<div class="empty">${t('ad_empty')}</div>`; return; }
+    el.innerHTML = sets.map(s=>`
+      <div class="rev" id="rev-${s.id}">
+        <div style="display:flex;justify-content:space-between;gap:1rem;align-items:start;flex-wrap:wrap">
+          <div>
+            <div style="font-size:1.2rem;font-weight:700;color:#fff">${escapeHtml(s.title)}</div>
+            <div class="set-meta" style="margin-top:.4rem">
+              <span class="chip">${escapeHtml(s.topic)}</span>
+              <span class="chip plain">${escapeHtml(s.grade)}</span>
+              <span class="chip plain">${s.question_count} ${t('questions_n')}</span>
+              <span class="chip plain">▶ ${s.play_count}×</span>
+              ${s.visibility==='public'?`<span class="badge green">${t('st_public')}</span>`:`<span class="badge grey">${t('st_private')}</span>`}
+            </div>
+            <div style="font-size:.85rem;color:var(--muted);margin-top:.4rem">
+              ${escapeHtml(s.author_name)} · ${fmtDate(s.created_at)} · ${starsHtml(s.avg_rating,s.rating_count)}</div>
+            ${s.reject_reason?`<div style="font-size:.85rem;color:var(--red-br);margin-top:.3rem">
+              ${t('st_reason')}: ${escapeHtml(s.reject_reason)}</div>`:''}
+          </div>
+          <button class="btn btn-ghost btn-sm" onclick="peek(${s.id})">${t('ad_view')}</button>
+        </div>
+        <div class="qprev" id="peek-${s.id}" style="display:none"></div>
+        <div style="display:flex;gap:.5rem;margin-top:.8rem;flex-wrap:wrap">
+          ${status!=='approved'?`
+            <button class="btn btn-green btn-sm" onclick="review(${s.id},'approve','public')">${t('ad_app_pub')}</button>
+            <button class="btn btn-ghost btn-sm" onclick="review(${s.id},'approve','private')">${t('ad_app_priv')}</button>`:`
+            <button class="btn btn-ghost btn-sm" onclick="setVis(${s.id},'${s.visibility==='public'?'private':'public'}')">
+              ${t('ad_toggle')} ${s.visibility==='public'?t('st_private').toLowerCase():t('st_public').toLowerCase()}</button>
+            <button class="btn btn-ghost btn-sm" onclick="location.href='/host.html?set=${s.id}'">${t('ad_try')}</button>`}
+          ${status!=='rejected'?`<button class="btn btn-red btn-sm" onclick="reject(${s.id})">${t('ad_reject')}</button>`:''}
+          <button class="btn btn-red btn-sm" style="margin-left:auto" onclick="del(${s.id})">${t('ad_del')}</button>
+        </div>
+      </div>`).join('');
+  }catch(e){ el.innerHTML=`<div class="empty">${escapeHtml(e.message)}</div>`; }
+}
+
+async function peek(id){
+  const box=document.getElementById('peek-'+id);
+  if(box.style.display==='block'){ box.style.display='none'; return; }
+  box.style.display='block'; box.innerHTML=t('loading');
+  const { set } = await api.get('/api/sets/'+id);
+  box.innerHTML = set.questions.map((q,i)=>`
+    <div style="margin-bottom:.6rem">
+      <div style="font-weight:600">${i+1}. ${escapeHtml(q.question)}</div>
+      <div style="color:var(--muted);padding-left:1rem;font-size:.85rem">
+        ${q.answers.map(a=>`${escapeHtml(a.text)} <span style="color:var(--gold)">${a.points}</span>`).join(' · ')}
+      </div></div>`).join('');
+}
+
+async function review(id, action, visibility){
+  try{ const r = await api.post(`/api/admin/sets/${id}/review`,{action,visibility});
+    ok(r.message); loadMetrics(); loadQueue(TAB);
+  }catch(e){ err(e.message); }
+}
+async function reject(id){
+  const reason = prompt(t('ad_reason'));
+  if(reason===null) return;
+  try{ await api.post(`/api/admin/sets/${id}/review`,{action:'reject',reason});
+    ok(t('st_rejected')); loadMetrics(); loadQueue(TAB);
+  }catch(e){ err(e.message); }
+}
+async function setVis(id, visibility){
+  try{ await api.post(`/api/admin/sets/${id}/visibility`,{visibility});
+    ok('OK'); loadQueue(TAB);
+  }catch(e){ err(e.message); }
+}
+async function del(id){
+  if(!confirm(t('ad_del_conf'))) return;
+  try{ await api.del('/api/sets/'+id); ok(t('cat_deleted')); loadMetrics(); loadQueue(TAB); }
+  catch(e){ err(e.message); }
+}
+
+async function loadUsers(){
+  const el=document.getElementById('content');
+  el.innerHTML=`<div class="empty">${t('loading')}</div>`;
+  const { users } = await api.get('/api/admin/users');
+  el.innerHTML = `<div class="card"><table class="tbl">
+    <tr><th>${t('ad_t_name')}</th><th>${t('au_email')}</th><th>${t('ad_t_state')}</th><th>${t('ad_t_sets')}</th><th>${t('ad_t_reg')}</th></tr>
+    ${users.map(u=>`<tr>
+      <td>${escapeHtml(u.display_name)} ${u.is_admin?'<span class="badge gold">admin</span>':''}</td>
+      <td style="color:var(--muted)">${escapeHtml(u.email)}</td>
+      <td>${u.verified?`<span class="badge green">${t('ad_verified')}</span>`:`<span class="badge grey">${t('ad_unverified')}</span>`}</td>
+      <td>${u.set_count}</td><td style="color:var(--muted)">${fmtDate(u.created_at)}</td>
+    </tr>`).join('')}</table></div>`;
+}
+
+(async()=>{
+  await bootstrap('admin');
+  if(!ME?.isAdmin){ document.getElementById('gate').style.display='block'; return; }
+  document.getElementById('panel').style.display='block';
+  await loadMetrics(); go('pending');
+})();
+</script>
+</body>
+</html>
