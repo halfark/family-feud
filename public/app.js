@@ -52,6 +52,7 @@ function renderNav(active) {
     if (ME.isAdmin) h += link('/admin.html', t('nav_admin'), 'admin');
   }
 
+  h += `<a href="/?pick=1" title="${t('nav_home_tip')}">\u{1F310} ${t('nav_home')}</a>`;
   h += `<button onclick="switchLang()" title="${t('nav_switch')}" style="border-color:var(--line)">`
      + `${LANG === 'cs' ? '\u{1F1E8}\u{1F1FF} CS' : '\u{1F1EC}\u{1F1E7} EN'}</button>`;
 
@@ -64,8 +65,14 @@ function renderNav(active) {
   }
   nav.innerHTML = h;
 
+  // logotyp vede zpět na rozcestník (běžná webová konvence)
   const b = document.querySelector('.brand');
-  if (b) b.textContent = t('brand');
+  if (b) {
+    b.textContent = t('brand');
+    b.style.cursor = 'pointer';
+    b.title = t('nav_home_tip');
+    b.onclick = () => { location.href = '/?pick=1'; };
+  }
 }
 
 function switchLang() {

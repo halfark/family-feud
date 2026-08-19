@@ -85,6 +85,12 @@ async function waitForServer(tries = 40) {
     check(/5 proti 5/.test(land.text) && /Family Feud/.test(land.text),
       'rozcestník nabízí obě jazykové verze');
 
+    const back = await req('GET', '/?pick=1');
+    check(/id="ch-cs"/.test(back.text) && /id="ch-en"/.test(back.text),
+      'na rozcestník se lze vrátit přes /?pick=1');
+    const appjs = (await req('GET', '/app.js')).text;
+    check(/\/\?pick=1/.test(appjs), 'navigace obsahuje odkaz zpět na rozcestník');
+
     section('Zvukový engine');
     const audioSrc = (await req('GET', '/audio.js')).text;
     check(/FFAudio/.test(audioSrc), 'audio.js se servíruje');

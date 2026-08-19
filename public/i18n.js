@@ -15,6 +15,10 @@ const DICT = {
   nav_register: { cs: 'Registrace',           en: 'Sign up' },
   nav_logout:   { cs: 'Odhlásit',             en: 'Log out' },
   nav_switch:   { cs: 'Change language',      en: 'Změnit jazyk' },
+  nav_home:     { cs: 'Volba verze',          en: 'Choose version' },
+  nav_home_tip: { cs: 'Zpět na výběr jazykové verze',
+                  en: 'Back to the language chooser' },
+  land_current: { cs: 'Aktuálně zvoleno',     en: 'Currently selected' },
 
   // --- obecné ---
   loading:      { cs: 'Načítám…',             en: 'Loading…' },

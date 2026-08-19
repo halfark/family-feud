@@ -19,7 +19,10 @@ Na úvodní stránce `/` si uživatel vybere verzi:
 | 🇨🇿 **5 proti 5** | česká verze, 1.–9. třída — prvouka, přírodověda, vlastivěda, čeština… |
 | 🇬🇧 **Family Feud** | anglická ESL verze, 3.–9. třída (A1–B1) — slovní zásoba, konverzace, reálie |
 
-Volba se pamatuje v prohlížeči; jazyk lze kdykoli přepnout tlačítkem 🇨🇿/🇬🇧 v horní liště.
+Volba se pamatuje v prohlížeči. Na rozcestník se kdykoli vrátíš kliknutím na
+logo v levém horním rohu nebo odkazem **Volba verze** v horní liště (adresa
+`/?pick=1`) — právě aktivní verze je tam označená. Jazyk lze přepnout i rovnou
+tlačítkem 🇨🇿/🇬🇧 v horní liště.
 Přepnutí mění **celé rozhraní** (menu, panel moderátora, tabule pro žáky, admin, hlášky)
 i **nabídku sad** — česká a anglická databáze jsou oddělené a nemíchají se.
 Okno pro žáky přebírá jazyk od moderátora automaticky.
@@ -255,7 +258,7 @@ npm run test:upgrade  # jen bezpečnost redeploye
 ```
 
 Smoke test (`test/smoke.js`) nastartuje server nad dočasnou databází a projde
-47 kontrol: seed a jeho idempotence, dostupnost všech stránek, oddělení jazyků,
+49 kontrol: seed a jeho idempotence, dostupnost všech stránek, oddělení jazyků,
 CAPTCHA, ověření e-mailu, moderační frontu, oprávnění, hodnocení, statistiky,
 zvukový engine a validaci. Upgrade test (`test/upgrade.js`) přidává dalších 14
 kontrol nad simulovanou nasazenou instancí.
