@@ -95,6 +95,15 @@ async function waitForServer(tries = 40) {
     check(meta.json?.counts?.cs > 0, `české sady naseedovány (${meta.json?.counts?.cs})`);
     check(meta.json?.counts?.en > 0, `anglické sady naseedovány (${meta.json?.counts?.en})`);
 
+    // každá výchozí sada musí mít aspoň 6 otázek
+    const allSets = (await req('GET', '/api/sets')).json?.sets || [];
+    const thin = allSets.filter(x => x.question_count < 6);
+    check(thin.length === 0,
+      thin.length ? `sady pod 6 otázek: ${thin.map(x => x.title).join(', ')}`
+                  : `všech ${allSets.length} sad má aspoň 6 otázek`);
+    const totalQ = allSets.reduce((a, x) => a + x.question_count, 0);
+    check(totalQ >= 240, `celkem ${totalQ} otázek v databázi`);
+
     for (const lang of ['cs', 'en']) {
       const r = await req('GET', `/api/sets?lang=${lang}`);
       const langs = new Set((r.json?.sets || []).map(s => s.language));

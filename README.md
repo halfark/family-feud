@@ -112,14 +112,18 @@ Editace už schválené sady ji vrací zpět ke schválení.
 
 ## Databáze otázek
 
-Seed naplní obě jazykové větve (**40 sad / 89 otázek**).
+Seed naplní obě jazykové větve: **40 sad / 240 otázek**, každá sada má minimálně
+6 otázek, takže vydrží na celou vyučovací hodinu.
 
-### 🇨🇿 Česká — 15 sad, 35 otázek
+### 🇨🇿 Česká — 15 sad, 90 otázek
 
-Ročníky 1.–3., 4.–5., 6.–9. třída. Témata: Přírodověda · Škola · Jídlo a zdraví · Sport ·
-Dopravní výchova · Člověk a společnost · Vlastivěda / Zeměpis · Přírodní vědy · Prvouka · Český jazyk
+| Ročník | Sad | Témata |
+|---|---|---|
+| 1.–3. třída | 5 | zvířata, škola, jídlo, dopravní výchova, roční období a svátky |
+| 4.–5. třída | 6 | ptáci a hmyz, zdravý životní styl, sport, povolání, lidské tělo, rostliny |
+| 6.–9. třída | 4 | škola a učení, Česko, vesmír, český jazyk |
 
-### 🇬🇧 Anglická ESL — 25 sad, 54 otázek
+### 🇬🇧 Anglická ESL — 25 sad, 150 otázek
 
 | Úroveň | Sad | Témata |
 |---|---|---|
@@ -127,8 +131,24 @@ Dopravní výchova · Člověk a společnost · Vlastivěda / Zeměpis · Přír
 | `Grade 6–7 (A1–A2)` | 8 | denní režim, volný čas, sport, bydlení, povolání, místa ve městě, počasí, svátky |
 | `Grade 8–9 (A2–B1)` | 9 | cestování, technologie, životní prostředí, zdraví, nakupování, pocity a povaha, nepravidelná slovesa, anglicky mluvící země, škola a plány do budoucna |
 
-Anglické sady jsou psané jako survey otázky („Name a pet.“, „What do you do in your free time?“),
-takže procvičují produktivní slovní zásobu, ne jen pasivní rozpoznávání.
+Anglické sady jsou psané jako survey otázky („Name a pet.“, „What do you do in your
+free time?“), takže procvičují produktivní slovní zásobu, ne jen pasivní rozpoznávání.
+
+### Jak jsou sady zapsané
+
+Kvůli přehlednosti používají `seed-cs.js` a `seed-en.js` kompaktní zápis — jedna
+otázka na řádek, odpovědi jako `text:body`:
+
+```js
+set('Zvířata kolem nás', 'Přírodověda', '1.–3. třída',
+  'Jmenuj domácí zvíře.|Pes:34|Kočka:28|Králík:14|Křeček:10',
+  'Co nám dává kráva?|Mléko:52|Maso:24|Kůži:12|Hnůj:8',
+  …)
+```
+
+Parser v `seed-util.js` zápis rozbalí a rovnou hlídá pravidla: minimálně 6 otázek
+na sadu, 2–8 odpovědí na otázku, body 1–99. Když něco nesedí, seed spadne
+s konkrétní chybou místo aby uložil rozbitou sadu.
 
 ### Import / export JSON
 
@@ -215,7 +235,7 @@ npm test
 ```
 
 Smoke test (`test/smoke.js`) nastartuje server nad dočasnou databází a projde
-45 kontrol: seed a jeho idempotence, dostupnost všech stránek, oddělení jazyků,
+47 kontrol: seed a jeho idempotence, dostupnost všech stránek, oddělení jazyků,
 CAPTCHA, ověření e-mailu, moderační frontu, oprávnění, hodnocení, statistiky,
 zvukový engine a validaci.
 Nepotřebuje žádnou testovací knihovnu, takže projekt nemá dev závislosti.
@@ -236,8 +256,10 @@ GitHub Actions (`.github/workflows/ci.yml`) navíc při každém pushi:
 ├── server.js           Express server, REST API
 ├── db.js               SQLite schéma + migrace
 ├── auth.js             JWT, CAPTCHA, odesílání e-mailů
-├── seed.js             české sady + admin účet
-├── seed-en.js          anglické ESL sady
+├── seed.js             zápis sad do DB + admin účet
+├── seed-util.js        parser kompaktního zápisu a validace
+├── seed-cs.js          české sady (15 × 6 otázek)
+├── seed-en.js          anglické ESL sady (25 × 6 otázek)
 ├── public/
 │   ├── index.html      rozcestník CS / EN
 │   ├── catalog.html    katalog sad

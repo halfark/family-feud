@@ -1,248 +1,213 @@
-// Anglické ESL sady pro 3.–9. třídu ZŠ.
-// grade: "Grade 3–5 (A1)" | "Grade 6–7 (A1–A2)" | "Grade 8–9 (A2–B1)"
+// Anglická ESL databáze pro 3.–9. třídu — 25 sad po 6 otázkách.
+// Úrovně zhruba podle SERR: A1 → A1–A2 → A2–B1.
+const { set } = require('./seed-util');
 
 const G1 = 'Grade 3–5 (A1)';
 const G2 = 'Grade 6–7 (A1–A2)';
 const G3 = 'Grade 8–9 (A2–B1)';
 
 module.exports = [
-  // ================= GRADE 3–5 — A1 =================
-  { title: 'Colours and Shapes', topic: 'Vocabulary', grade: G1, questions: [
-    { question: 'Name a colour.', answers: [
-      {text:'Blue',points:26},{text:'Red',points:24},{text:'Green',points:18},
-      {text:'Yellow',points:14},{text:'Black',points:10},{text:'Pink',points:8}]},
-    { question: 'Name a shape.', answers: [
-      {text:'Circle',points:32},{text:'Square',points:28},{text:'Triangle',points:22},
-      {text:'Rectangle',points:12},{text:'Star',points:6}]},
-  ]},
 
-  { title: 'Animals', topic: 'Vocabulary', grade: G1, questions: [
-    { question: 'Name a pet.', answers: [
-      {text:'Dog',points:38},{text:'Cat',points:30},{text:'Rabbit',points:12},
-      {text:'Hamster',points:10},{text:'Fish',points:6},{text:'Parrot',points:4}]},
-    { question: 'Name a farm animal.', answers: [
-      {text:'Cow',points:30},{text:'Pig',points:24},{text:'Horse',points:18},
-      {text:'Sheep',points:14},{text:'Chicken',points:10},{text:'Goat',points:4}]},
-    { question: 'Name a wild animal.', answers: [
-      {text:'Lion',points:28},{text:'Elephant',points:24},{text:'Tiger',points:18},
-      {text:'Bear',points:14},{text:'Monkey',points:10},{text:'Giraffe',points:6}]},
-  ]},
+  // ============================ GRADE 3–5 (A1) ============================
+  set('Colours and Shapes', 'Vocabulary', G1,
+    'Name a colour.|Blue:26|Red:24|Green:18|Yellow:14|Black:10|Pink:8',
+    'Name a shape.|Circle:32|Square:28|Triangle:22|Rectangle:12|Star:6',
+    'What colour is the sun?|Yellow:52|Orange:26|Red:14|Gold:8',
+    'Name something red.|Apple:30|Tomato:22|Strawberry:18|Fire engine:14|Heart:10|Blood:6',
+    'Name something you colour with.|Crayon:32|Pencil:26|Marker:20|Paint:16|Chalk:6',
+    'Name a colour of the rainbow.|Red:24|Blue:22|Green:18|Yellow:16|Orange:12|Purple:8'),
 
-  { title: 'Food and Drink', topic: 'Vocabulary', grade: G1, questions: [
-    { question: 'Name a fruit.', answers: [
-      {text:'Apple',points:32},{text:'Banana',points:26},{text:'Orange',points:18},
-      {text:'Strawberry',points:12},{text:'Grapes',points:8},{text:'Pear',points:4}]},
-    { question: 'Name a vegetable.', answers: [
-      {text:'Carrot',points:30},{text:'Potato',points:24},{text:'Tomato',points:20},
-      {text:'Cucumber',points:14},{text:'Onion',points:8},{text:'Broccoli',points:4}]},
-    { question: 'Name something you drink.', answers: [
-      {text:'Water',points:34},{text:'Juice',points:24},{text:'Milk',points:18},
-      {text:'Tea',points:12},{text:'Lemonade',points:8},{text:'Hot chocolate',points:4}]},
-  ]},
+  set('Animals', 'Vocabulary', G1,
+    'Name a pet.|Dog:34|Cat:30|Rabbit:12|Hamster:10|Fish:8|Bird:6',
+    'Name a farm animal.|Cow:28|Pig:22|Horse:20|Sheep:14|Chicken:10|Duck:6',
+    'Name a wild animal.|Lion:26|Elephant:22|Tiger:18|Bear:14|Monkey:12|Giraffe:8',
+    'Name an animal that can fly.|Bird:34|Butterfly:22|Bat:18|Bee:14|Eagle:8|Owl:4',
+    'Name an animal that lives in water.|Fish:34|Dolphin:22|Shark:18|Whale:14|Frog:8|Turtle:4',
+    'What sound does a dog make?|Woof:56|Bark:26|Growl:10|Howl:8'),
 
-  { title: 'My Family', topic: 'Vocabulary', grade: G1, questions: [
-    { question: 'Name a member of your family.', answers: [
-      {text:'Mum',points:26},{text:'Dad',points:24},{text:'Sister',points:18},
-      {text:'Brother',points:16},{text:'Grandma',points:10},{text:'Grandpa',points:6}]},
-    { question: 'Name something you do with your family.', answers: [
-      {text:'Eat dinner',points:28},{text:'Watch TV',points:24},{text:'Go on holiday',points:20},
-      {text:'Play games',points:16},{text:'Go for a walk',points:12}]},
-  ]},
+  set('Food and Drink', 'Vocabulary', G1,
+    'Name a fruit.|Apple:30|Banana:26|Orange:18|Strawberry:12|Pear:8|Grapes:6',
+    'Name a vegetable.|Carrot:28|Potato:24|Tomato:18|Cucumber:14|Onion:10|Pepper:6',
+    'Name a drink.|Water:30|Juice:24|Milk:18|Tea:12|Lemonade:10|Cocoa:6',
+    'What do you eat for breakfast?|Bread:26|Cereal:24|Eggs:18|Yoghurt:16|Fruit:10|Pancakes:6',
+    'Name a sweet food.|Chocolate:34|Ice cream:24|Cake:18|Sweets:12|Biscuits:8|Doughnut:4',
+    'Name a fast food.|Pizza:32|Burger:28|Chips:18|Hot dog:12|Kebab:6|Sandwich:4'),
 
-  { title: 'School Things', topic: 'School', grade: G1, questions: [
-    { question: 'Name something in your pencil case.', answers: [
-      {text:'Pencil',points:30},{text:'Pen',points:26},{text:'Rubber',points:18},
-      {text:'Ruler',points:12},{text:'Sharpener',points:8},{text:'Crayons',points:6}]},
-    { question: 'Name a school subject.', answers: [
-      {text:'Maths',points:26},{text:'English',points:24},{text:'PE',points:20},
-      {text:'Art',points:14},{text:'Music',points:10},{text:'Science',points:6}]},
-  ]},
+  set('My Family', 'Vocabulary', G1,
+    'Name a family member.|Mother:26|Father:24|Sister:18|Brother:16|Grandmother:10|Grandfather:6',
+    'Who lives in your house?|Mum:28|Dad:26|Brother or sister:22|Pet:14|Grandparents:10',
+    'What do you do with your family?|Eat together:28|Watch TV:22|Go on a trip:18|Play games:16|Talk:10|Go shopping:6',
+    'Who helps you with your homework?|Mum:34|Dad:26|Brother or sister:16|Teacher:12|Friend:8|Nobody:4',
+    'Name a family celebration.|Birthday:36|Christmas:26|Wedding:16|Easter:12|Name day:10',
+    'What do you call your mother in English?|Mum:38|Mother:30|Mummy:18|Mom:14'),
 
-  { title: 'My Body', topic: 'Vocabulary', grade: G1, questions: [
-    { question: 'Name a part of the body.', answers: [
-      {text:'Hand',points:24},{text:'Leg',points:22},{text:'Head',points:18},
-      {text:'Arm',points:14},{text:'Foot',points:12},{text:'Back',points:10}]},
-    { question: 'Name something on your face.', answers: [
-      {text:'Eyes',points:30},{text:'Nose',points:26},{text:'Mouth',points:20},
-      {text:'Ears',points:14},{text:'Hair',points:6},{text:'Chin',points:4}]},
-  ]},
+  set('School Things', 'School', G1,
+    'What is in your school bag?|Pencil case:24|Books:22|Notebook:18|Snack:14|Ruler:12|Water bottle:10',
+    'Name a school subject.|Maths:24|English:22|PE:18|Art:14|Music:12|Science:10',
+    'Who works at a school?|Teacher:36|Head teacher:22|Cleaner:14|Cook:12|Caretaker:10|Secretary:6',
+    'Name a place in a school.|Classroom:30|Gym:24|Canteen:18|Library:14|Playground:10|Corridor:4',
+    'What do you do in the break?|Eat a snack:28|Talk to friends:26|Play:20|Go to the toilet:14|Run:8|Read:4',
+    'Name something on a teacher\u2019s desk.|Books:26|Pen:22|Computer:20|Register:16|Glasses:10|Coffee:6'),
 
-  { title: 'Clothes', topic: 'Vocabulary', grade: G1, questions: [
-    { question: 'Name something you wear.', answers: [
-      {text:'T-shirt',points:26},{text:'Trousers',points:22},{text:'Shoes',points:20},
-      {text:'Jacket',points:14},{text:'Dress',points:10},{text:'Socks',points:8}]},
-    { question: 'Name something you wear in winter.', answers: [
-      {text:'Coat',points:30},{text:'Scarf',points:24},{text:'Gloves',points:20},
-      {text:'Hat',points:16},{text:'Boots',points:10}]},
-  ]},
+  set('My Body', 'Vocabulary', G1,
+    'Name a part of the body.|Hand:22|Head:20|Leg:18|Eye:16|Nose:14|Ear:10',
+    'Name a part of the face.|Eyes:28|Nose:24|Mouth:20|Ears:16|Cheeks:8|Chin:4',
+    'What do you do with your hands?|Write:26|Hold things:22|Wave:18|Clap:16|Draw:10|Eat:8',
+    'Name one of the five senses.|Sight:26|Hearing:24|Smell:20|Taste:18|Touch:12',
+    'What hurts when you are ill?|Head:32|Throat:26|Stomach:20|Ear:12|Tooth:10',
+    'Name something you wash.|Hands:36|Face:24|Hair:18|Teeth:14|Feet:8'),
 
-  { title: 'Days, Months and Time', topic: 'Vocabulary', grade: G1, questions: [
-    { question: 'Name a day of the week.', answers: [
-      {text:'Monday',points:26},{text:'Friday',points:24},{text:'Saturday',points:20},
-      {text:'Sunday',points:16},{text:'Wednesday',points:8},{text:'Tuesday',points:6}]},
-    { question: 'Name a month of the year.', answers: [
-      {text:'December',points:24},{text:'January',points:20},{text:'June',points:18},
-      {text:'July',points:16},{text:'September',points:12},{text:'May',points:10}]},
-  ]},
+  set('Clothes', 'Vocabulary', G1,
+    'Name a piece of clothing.|T-shirt:26|Jeans:22|Jacket:18|Shoes:14|Dress:12|Socks:8',
+    'What do you wear when it is cold?|Coat:28|Scarf:22|Hat:18|Gloves:16|Boots:10|Sweater:6',
+    'What do you wear in summer?|Shorts:30|T-shirt:26|Sandals:18|Sunglasses:12|Cap:10|Swimsuit:4',
+    'Name something you wear on your feet.|Shoes:32|Socks:26|Boots:18|Trainers:14|Sandals:10',
+    'What do you wear for PE?|Trainers:32|T-shirt:26|Shorts:20|Tracksuit:14|Socks:8',
+    'Where do people buy clothes?|Shopping centre:32|Clothes shop:26|Online:20|Market:12|Second-hand shop:10'),
 
-  // ================= GRADE 6–7 — A1/A2 =================
-  { title: 'Daily Routine', topic: 'Everyday life', grade: G2, questions: [
-    { question: 'Name something you do every morning.', answers: [
-      {text:'Get up',points:26},{text:'Brush my teeth',points:24},{text:'Have breakfast',points:20},
-      {text:'Get dressed',points:16},{text:'Wash my face',points:8},{text:'Check my phone',points:6}]},
-    { question: 'Name something you do before you go to bed.', answers: [
-      {text:'Brush my teeth',points:30},{text:'Have a shower',points:22},{text:'Read a book',points:18},
-      {text:'Watch a video',points:16},{text:'Set an alarm',points:8},{text:'Say goodnight',points:6}]},
-  ]},
+  set('Days, Months and Time', 'Vocabulary', G1,
+    'Name a day of the week.|Monday:24|Friday:22|Saturday:20|Sunday:16|Wednesday:10|Tuesday:8',
+    'Name a month of the year.|January:22|December:20|June:18|September:16|May:14|July:10',
+    'Name a summer month.|July:34|June:30|August:28|September:8',
+    'What time do you get up on a school day?|Seven o\u2019clock:34|Half past six:26|Six o\u2019clock:18|Half past seven:14|Eight o\u2019clock:8',
+    'Name a part of the day.|Morning:30|Afternoon:26|Evening:22|Night:18|Midday:4',
+    'What is your favourite day of the week?|Saturday:34|Friday:26|Sunday:20|Wednesday:10|Monday:6|Thursday:4'),
 
-  { title: 'Hobbies and Free Time', topic: 'Everyday life', grade: G2, questions: [
-    { question: 'Name a hobby.', answers: [
-      {text:'Football',points:24},{text:'Reading',points:20},{text:'Gaming',points:18},
-      {text:'Drawing',points:16},{text:'Dancing',points:12},{text:'Playing an instrument',points:10}]},
-    { question: 'Name something you do at the weekend.', answers: [
-      {text:'Meet friends',points:28},{text:'Sleep in',points:22},{text:'Play sport',points:18},
-      {text:'Go shopping',points:16},{text:'Help at home',points:10},{text:'Do homework',points:6}]},
-  ]},
+  // ========================== GRADE 6–7 (A1–A2) ==========================
+  set('Daily Routine', 'Everyday life', G2,
+    'What do you do in the morning?|Get up:26|Brush my teeth:22|Have breakfast:20|Get dressed:16|Wash my face:10|Go to school:6',
+    'What do you do after school?|Do my homework:28|Play games:22|Meet friends:18|Watch videos:16|Go to a club:10|Help at home:6',
+    'What do you do before you go to bed?|Brush my teeth:30|Read:20|Watch a video:18|Have a shower:16|Talk to friends:10|Pack my bag:6',
+    'How do you help at home?|Wash the dishes:26|Tidy my room:24|Take out the rubbish:20|Hoover:14|Cook:10|Walk the dog:6',
+    'What do you do at the weekend?|Sleep longer:26|Meet friends:24|Play sport:20|Go on a trip:16|Do homework:10|Help at home:4',
+    'Name something you do every single day.|Eat:28|Sleep:26|Go to school:20|Use my phone:16|Brush my teeth:10'),
 
-  { title: 'Sports', topic: 'Sport', grade: G2, questions: [
-    { question: 'Name a sport you play with a ball.', answers: [
-      {text:'Football',points:34},{text:'Basketball',points:24},{text:'Volleyball',points:16},
-      {text:'Tennis',points:12},{text:'Handball',points:8},{text:'Rugby',points:6}]},
-    { question: 'Name a winter sport.', answers: [
-      {text:'Skiing',points:32},{text:'Ice hockey',points:26},{text:'Snowboarding',points:20},
-      {text:'Ice skating',points:14},{text:'Sledging',points:8}]},
-  ]},
+  set('Hobbies and Free Time', 'Everyday life', G2,
+    'What do you do in your free time?|Play sports:26|Watch videos:22|Play games:18|Read:12|Meet friends:12|Listen to music:10',
+    'Name a musical instrument.|Guitar:30|Piano:26|Drums:16|Violin:14|Flute:10|Trumpet:4',
+    'Name a hobby you can do at home.|Cooking:26|Drawing:24|Reading:20|Gaming:16|Playing music:10|Building models:4',
+    'Name a hobby you do outside.|Cycling:28|Football:24|Running:18|Skateboarding:14|Fishing:10|Hiking:6',
+    'What do people collect?|Cards:28|Coins:22|Stickers:18|Stamps:14|Figures:12|Badges:6',
+    'Where do you meet your friends?|At school:28|In a park:24|At home:20|In town:16|In a caf\u00e9:8|Online:4'),
 
-  { title: 'House and Home', topic: 'Everyday life', grade: G2, questions: [
-    { question: 'Name a room in a house.', answers: [
-      {text:'Kitchen',points:26},{text:'Bedroom',points:24},{text:'Bathroom',points:20},
-      {text:'Living room',points:18},{text:'Hall',points:8},{text:'Garage',points:4}]},
-    { question: 'Name something you find in a kitchen.', answers: [
-      {text:'Fridge',points:28},{text:'Cooker',points:22},{text:'Table',points:18},
-      {text:'Sink',points:14},{text:'Microwave',points:10},{text:'Kettle',points:8}]},
-  ]},
+  set('Sports', 'Sport', G2,
+    'Name a sport.|Football:32|Basketball:22|Swimming:16|Tennis:12|Volleyball:10|Ice hockey:8',
+    'Name a sport you play with a ball.|Football:34|Basketball:24|Volleyball:18|Tennis:12|Handball:8|Golf:4',
+    'Name a winter sport.|Skiing:32|Snowboarding:22|Ice skating:18|Ice hockey:16|Sledging:8|Biathlon:4',
+    'What do you need to play football?|A ball:38|Boots:24|A goal:16|A team:12|A pitch:10',
+    'Where do people do sport?|In a gym:28|On a sports field:26|In a swimming pool:18|In a park:14|In a stadium:8|At home:6',
+    'What does the winner get?|A medal:34|A cup:26|A diploma:18|A prize:12|Applause:10'),
 
-  { title: 'Jobs and Work', topic: 'Society', grade: G2, questions: [
-    { question: 'Name a job.', answers: [
-      {text:'Teacher',points:24},{text:'Doctor',points:22},{text:'Firefighter',points:18},
-      {text:'Police officer',points:16},{text:'Chef',points:12},{text:'Driver',points:8}]},
-    { question: 'Name a job where you wear a uniform.', answers: [
-      {text:'Police officer',points:28},{text:'Nurse',points:24},{text:'Firefighter',points:20},
-      {text:'Soldier',points:14},{text:'Pilot',points:10},{text:'Waiter',points:4}]},
-  ]},
+  set('House and Home', 'Everyday life', G2,
+    'Name a room in a house.|Kitchen:26|Bedroom:24|Bathroom:20|Living room:18|Hall:8|Garage:4',
+    'Name a piece of furniture.|Table:24|Chair:22|Bed:20|Sofa:16|Wardrobe:12|Shelf:6',
+    'What is in a kitchen?|Fridge:28|Cooker:24|Sink:18|Table:14|Microwave:10|Kettle:6',
+    'What is in your bedroom?|Bed:34|Desk:22|Wardrobe:18|Lamp:12|Posters:8|Chair:6',
+    'Name something in a bathroom.|Toothbrush:28|Towel:24|Shower:20|Mirror:14|Soap:10|Toilet:4',
+    'What do you do in the living room?|Watch TV:36|Relax:22|Talk:16|Play games:14|Read:8|Eat:4'),
 
-  { title: 'Places in Town', topic: 'Everyday life', grade: G2, questions: [
-    { question: 'Name a place in a town.', answers: [
-      {text:'School',points:24},{text:'Park',points:20},{text:'Shop',points:18},
-      {text:'Library',points:16},{text:'Hospital',points:12},{text:'Cinema',points:10}]},
-    { question: 'Name a place where you can buy food.', answers: [
-      {text:'Supermarket',points:34},{text:'Bakery',points:24},{text:'Market',points:18},
-      {text:'Butcher’s',points:12},{text:'Petrol station',points:8},{text:'Café',points:4}]},
-  ]},
+  set('Jobs and Work', 'Society', G2,
+    'Name a job.|Teacher:26|Doctor:24|Police officer:18|Firefighter:14|Cook:10|Driver:8',
+    'Where do people work?|In an office:24|At a school:22|In a hospital:20|In a shop:16|In a factory:10|In a restaurant:8',
+    'Name a job where you help people.|Doctor:30|Nurse:24|Teacher:18|Firefighter:16|Police officer:8|Social worker:4',
+    'Name a job you do outside.|Farmer:26|Builder:24|Gardener:20|Postman:16|Bin man:8|Forester:6',
+    'What job would you like to do?|Something with computers:26|Doctor:20|Teacher:18|Sportsperson:16|Artist:12|Businessperson:8',
+    'What do you need to get a good job?|Education:30|Experience:24|A CV:20|Skills:16|Languages:10'),
 
-  { title: 'Weather and Seasons', topic: 'Nature', grade: G2, questions: [
-    { question: 'Name a type of weather.', answers: [
-      {text:'Sunny',points:28},{text:'Rainy',points:24},{text:'Windy',points:18},
-      {text:'Snowy',points:16},{text:'Cloudy',points:10},{text:'Foggy',points:4}]},
-    { question: 'Name something you do in summer.', answers: [
-      {text:'Swim',points:30},{text:'Go on holiday',points:24},{text:'Ride a bike',points:16},
-      {text:'Eat ice cream',points:14},{text:'Camp',points:10},{text:'Sunbathe',points:6}]},
-  ]},
+  set('Places in Town', 'Everyday life', G2,
+    'Name a place in a town.|Shop:24|School:22|Park:20|Hospital:16|Church:10|Cinema:8',
+    'Where do people buy food?|Supermarket:38|Bakery:22|Market:16|Small shop:14|Butcher\u2019s:10',
+    'Where can you borrow a book?|Library:56|At school:20|From a friend:14|Bookshop:10',
+    'Where can you eat out?|Restaurant:32|Caf\u00e9:26|Pizzeria:18|Fast food place:14|Canteen:6|Bistro:4',
+    'What can you see in a park?|Trees:28|Benches:24|Playground:20|A lake:14|Dogs:10|Flowers:4',
+    'How do you get around a town?|On foot:30|By bus:26|By bike:18|By car:16|By tram:8|By scooter:2'),
 
-  { title: 'Holidays and Celebrations', topic: 'Culture', grade: G2, questions: [
-    { question: 'Name a holiday or celebration.', answers: [
-      {text:'Christmas',points:32},{text:'Easter',points:24},{text:'Birthday',points:18},
-      {text:'New Year',points:14},{text:'Halloween',points:8},{text:'Valentine’s Day',points:4}]},
-    { question: 'Name something people do at Christmas.', answers: [
-      {text:'Give presents',points:30},{text:'Decorate a tree',points:26},{text:'Eat a big meal',points:20},
-      {text:'Sing carols',points:12},{text:'Visit family',points:8}]},
-  ]},
+  set('Weather and Seasons', 'Nature', G2,
+    'How can the weather be?|Sunny:28|Rainy:24|Cloudy:18|Windy:14|Snowy:10|Foggy:6',
+    'Name a season of the year.|Summer:30|Winter:28|Spring:22|Autumn:20',
+    'What do you need when it rains?|An umbrella:40|A raincoat:26|Wellies:18|A hood:10|Nothing:6',
+    'What is the weather like in winter?|Cold:34|Snowy:26|Windy:16|Icy:14|Dark:10',
+    'What do you do on a sunny day?|Go outside:28|Swim:22|Ride a bike:18|Play sport:16|Have a picnic:10|Sunbathe:6',
+    'Name something you can see in the sky.|Clouds:28|The sun:26|A rainbow:16|Stars:14|Birds:10|A plane:6'),
 
-  // ================= GRADE 8–9 — A2/B1 =================
-  { title: 'Travel and Transport', topic: 'Travel', grade: G3, questions: [
-    { question: 'Name a means of transport.', answers: [
-      {text:'Car',points:26},{text:'Bus',points:22},{text:'Train',points:20},
-      {text:'Plane',points:16},{text:'Bike',points:10},{text:'Tram',points:6}]},
-    { question: 'Name something you pack in a suitcase.', answers: [
-      {text:'Clothes',points:30},{text:'Toothbrush',points:22},{text:'Phone charger',points:18},
-      {text:'Passport',points:14},{text:'Sunscreen',points:10},{text:'Shoes',points:6}]},
-    { question: 'Name an English-speaking country.', answers: [
-      {text:'The UK',points:30},{text:'The USA',points:28},{text:'Australia',points:18},
-      {text:'Canada',points:14},{text:'Ireland',points:6},{text:'New Zealand',points:4}]},
-  ]},
+  set('Holidays and Celebrations', 'Culture', G2,
+    'Name a holiday.|Christmas:34|Easter:26|New Year:18|Halloween:12|Birthday:6|Valentine\u2019s Day:4',
+    'What do people do at Christmas?|Give presents:30|Decorate a tree:24|Eat a big dinner:20|Sing carols:14|Visit family:12',
+    'What do you get for your birthday?|Presents:38|A cake:26|Cards:16|Money:12|A party:8',
+    'Name something you see at a party.|Cake:28|Music:24|Balloons:20|Presents:14|Games:10|Friends:4',
+    'What do people say on New Year\u2019s Eve?|Happy New Year:52|Cheers:20|Best wishes:16|Good luck:12',
+    'Name a school holiday.|Summer holiday:38|Christmas holiday:26|Easter holiday:18|Spring break:12|Autumn break:6'),
 
-  { title: 'Technology and Media', topic: 'Technology', grade: G3, questions: [
-    { question: 'Name something you do on a smartphone.', answers: [
-      {text:'Send messages',points:28},{text:'Watch videos',points:24},{text:'Take photos',points:18},
-      {text:'Play games',points:14},{text:'Listen to music',points:10},{text:'Make calls',points:6}]},
-    { question: 'Name a device you use every day.', answers: [
-      {text:'Phone',points:34},{text:'Laptop',points:24},{text:'Headphones',points:16},
-      {text:'TV',points:14},{text:'Tablet',points:8},{text:'Smartwatch',points:4}]},
-  ]},
+  // ========================== GRADE 8–9 (A2–B1) ==========================
+  set('Travel and Transport', 'Travel', G3,
+    'Name a means of transport.|Car:28|Bus:22|Train:18|Plane:14|Bike:12|Tram:6',
+    'What do you pack for a holiday?|Clothes:26|Toothbrush:20|Phone charger:18|Passport:16|Sunscreen:12|Camera:8',
+    'Where do people go on holiday?|To the sea:34|To the mountains:24|Abroad:16|To a city:12|To the countryside:8|Camping:6',
+    'Where do people stay on holiday?|In a hotel:36|At a campsite:22|In an apartment:18|In a hostel:12|With family:8|In a caravan:4',
+    'What can go wrong on a trip?|Lost luggage:26|A delay:24|Bad weather:20|Getting lost:16|Illness:10|Losing money:4',
+    'Why do people travel?|For a holiday:30|For work:24|To see family:18|To study:14|For sport:8|For adventure:6'),
 
-  { title: 'Environment', topic: 'Nature', grade: G3, questions: [
-    { question: 'Name something you can recycle.', answers: [
-      {text:'Paper',points:28},{text:'Plastic bottles',points:26},{text:'Glass',points:20},
-      {text:'Cardboard',points:14},{text:'Cans',points:8},{text:'Batteries',points:4}]},
-    { question: 'Name a way to help the planet.', answers: [
-      {text:'Recycle',points:26},{text:'Save water',points:22},{text:'Use less plastic',points:20},
-      {text:'Cycle or walk',points:16},{text:'Turn off lights',points:10},{text:'Plant trees',points:6}]},
-  ]},
+  set('Technology and Media', 'Technology', G3,
+    'What do you use your phone for?|Social media:26|Messaging:22|Music:16|Games:14|Photos:12|Homework:10',
+    'Name a device you use every day.|Phone:34|Laptop:24|Headphones:16|TV:12|Tablet:10|Smartwatch:4',
+    'What do people watch online?|Videos:32|Films:24|Series:18|Live streams:14|Sport:8|News:4',
+    'What can go wrong with a computer?|It freezes:28|No internet:24|A virus:18|It is slow:16|The battery dies:10|Lost files:4',
+    'Name a danger of the internet.|Fake news:26|Cyberbullying:24|Scams:20|Viruses:16|Too much screen time:10|Strangers:4',
+    'How do you find information?|Search engine:38|Ask a teacher:20|Videos:16|Books:14|Ask friends:8|Encyclopedia:4'),
 
-  { title: 'Health and Lifestyle', topic: 'Health', grade: G3, questions: [
-    { question: 'Name something healthy people do.', answers: [
-      {text:'Exercise',points:30},{text:'Eat vegetables',points:24},{text:'Sleep well',points:18},
-      {text:'Drink water',points:16},{text:'Avoid junk food',points:8},{text:'Go outside',points:4}]},
-    { question: 'Name a reason to see a doctor.', answers: [
-      {text:'A high temperature',points:26},{text:'A bad cough',points:22},{text:'A broken bone',points:20},
-      {text:'A headache',points:16},{text:'A check-up',points:10},{text:'A sore throat',points:6}]},
-  ]},
+  set('Environment', 'Nature', G3,
+    'How can we help the environment?|Recycle:28|Save water:20|Use less plastic:18|Ride a bike:16|Plant trees:12|Save energy:6',
+    'Name something we can recycle.|Paper:28|Plastic:26|Glass:20|Metal:14|Batteries:8|Clothes:4',
+    'Name an environmental problem.|Pollution:30|Climate change:24|Plastic waste:18|Deforestation:16|Extinction:8|Drought:4',
+    'What pollutes the air?|Cars:34|Factories:26|Heating:16|Planes:12|Burning rubbish:8|Cigarettes:4',
+    'Name a source of clean energy.|Solar power:32|Wind power:28|Water power:20|Geothermal:12|Biomass:8',
+    'What can you do at school for the environment?|Sort the waste:32|Save paper:24|Turn off the lights:20|Bring a water bottle:14|Plant a garden:10'),
 
-  { title: 'Shopping and Money', topic: 'Everyday life', grade: G3, questions: [
-    { question: 'Name a shop in a shopping centre.', answers: [
-      {text:'Clothes shop',points:30},{text:'Shoe shop',points:22},{text:'Bookshop',points:18},
-      {text:'Electronics shop',points:14},{text:'Pharmacy',points:10},{text:'Toy shop',points:6}]},
-    { question: 'Name something teenagers spend money on.', answers: [
-      {text:'Clothes',points:28},{text:'Food and snacks',points:24},{text:'Games',points:20},
-      {text:'Music or apps',points:14},{text:'Cinema tickets',points:10},{text:'Sports gear',points:4}]},
-  ]},
+  set('Health and Lifestyle', 'Health', G3,
+    'What keeps you healthy?|Exercise:28|Healthy food:24|Enough sleep:20|Drinking water:16|Fresh air:8|Not smoking:4',
+    'What do you say at the doctor\u2019s?|I have a headache:24|I feel sick:22|I have a sore throat:20|I have a temperature:18|My stomach hurts:16',
+    'Name something unhealthy.|Smoking:28|Fast food:24|Sweets:18|Alcohol:16|Energy drinks:10|Sitting all day:4',
+    'What do you do when you are ill?|Stay in bed:30|Drink tea:22|See a doctor:20|Take medicine:18|Measure my temperature:10',
+    'Name a way to relax.|Listen to music:28|Sleep:22|Watch a film:18|Go for a walk:16|Read:10|Have a bath:6',
+    'How much sleep does a teenager need?|Eight hours:34|Nine hours:28|Ten hours:20|Seven hours:12|Six hours:6'),
 
-  { title: 'Feelings and Personality', topic: 'Society', grade: G3, questions: [
-    { question: 'Name a word to describe a good friend.', answers: [
-      {text:'Kind',points:26},{text:'Funny',points:22},{text:'Honest',points:20},
-      {text:'Helpful',points:16},{text:'Loyal',points:10},{text:'Patient',points:6}]},
-    { question: 'Name something that makes people nervous.', answers: [
-      {text:'Exams',points:32},{text:'Speaking in public',points:26},{text:'The dentist',points:16},
-      {text:'Meeting new people',points:14},{text:'Flying',points:8},{text:'Job interviews',points:4}]},
-  ]},
+  set('Shopping and Money', 'Everyday life', G3,
+    'Name a shop.|Supermarket:28|Bakery:20|Clothes shop:18|Bookshop:14|Pharmacy:12|Butcher\u2019s:8',
+    'What do you say when you go shopping?|How much is it?:30|Can I help you?:24|I would like\u2026:20|Do you have\u2026?:16|I will take it:10',
+    'How do people pay?|By card:36|In cash:28|By phone:20|Online:12|By bank transfer:4',
+    'What do teenagers spend money on?|Food:26|Clothes:24|Games:18|Their phone:14|Cinema:10|Presents:8',
+    'How can a teenager get money?|Pocket money:34|A part-time job:24|From grandparents:18|Birthday money:16|Selling things:8',
+    'Name something you buy every week.|Food:34|Drinks:22|Snacks:18|A bus ticket:14|Toiletries:8|A magazine:4'),
 
-  { title: 'Irregular Verbs', topic: 'Grammar', grade: G3, questions: [
-    { question: 'Name an irregular verb in the past simple.', answers: [
-      {text:'Went',points:26},{text:'Was / were',points:22},{text:'Did',points:16},
-      {text:'Saw',points:14},{text:'Took',points:12},{text:'Made',points:10}]},
-    { question: 'Which verbs do we use to make questions?', answers: [
-      {text:'Do / does',points:32},{text:'Be (am, is, are)',points:26},{text:'Did',points:18},
-      {text:'Can',points:14},{text:'Have / has',points:10}]},
-  ]},
+  set('Feelings and Personality', 'Society', G3,
+    'Name a feeling.|Happy:30|Sad:26|Angry:18|Tired:12|Scared:8|Excited:6',
+    'How do you describe a good friend?|Kind:26|Funny:22|Honest:18|Helpful:16|Friendly:12|Loyal:6',
+    'What makes you happy?|Friends:28|Family:24|Music:16|Sport:14|Holidays:10|Good marks:8',
+    'What makes you nervous?|Exams:34|Speaking in front of the class:26|The dentist:14|Meeting new people:14|A big match:8|Waiting:4',
+    'Name a negative personality trait.|Lazy:28|Rude:24|Selfish:20|Arrogant:14|Dishonest:10|Jealous:4',
+    'How do you cheer up a friend?|Talk to them:30|Make them laugh:24|Listen to them:20|Do something fun:16|Give them a hug:10'),
 
-  { title: 'The English-Speaking World', topic: 'Culture', grade: G3, questions: [
-    { question: 'What is Britain famous for?', answers: [
-      {text:'Big Ben',points:26},{text:'The Royal Family',points:22},{text:'Tea',points:18},
-      {text:'Red buses',points:14},{text:'Football',points:12},{text:'Rainy weather',points:8}]},
-    { question: 'Name a city in the United Kingdom.', answers: [
-      {text:'London',points:40},{text:'Manchester',points:20},{text:'Liverpool',points:16},
-      {text:'Edinburgh',points:12},{text:'Birmingham',points:8},{text:'Glasgow',points:4}]},
-    { question: 'Name something you associate with the USA.', answers: [
-      {text:'New York',points:26},{text:'Hollywood',points:22},{text:'Fast food',points:18},
-      {text:'The Statue of Liberty',points:16},{text:'Basketball',points:10},{text:'Route 66',points:6}]},
-  ]},
+  set('Irregular Verbs', 'Grammar', G3,
+    'Name an irregular verb.|Go:26|Be:22|Have:18|See:14|Take:12|Make:8',
+    'What is the past tense of GO?|Went:64|Gone:20|Goed:10|Was going:6',
+    'What is the past tense of SEE?|Saw:60|Seen:24|Sawed:10|Did see:6',
+    'What is the past tense of EAT?|Ate:62|Eaten:24|Eated:10|Did eat:4',
+    'Name a verb with the same past simple and past participle.|Buy:24|Bring:22|Teach:18|Make:16|Say:12|Find:8',
+    'Which irregular verb is the hardest to remember?|Bring:26|Lie:24|Rise:20|Seek:14|Weave:10|Bear:6'),
 
-  { title: 'School Life and Future Plans', topic: 'School', grade: G3, questions: [
-    { question: 'Name a reason to learn English.', answers: [
-      {text:'Travel',points:30},{text:'Get a good job',points:26},{text:'Watch films and series',points:18},
-      {text:'Talk to people abroad',points:14},{text:'Study abroad',points:8},{text:'Play games online',points:4}]},
-    { question: 'Name something students do to prepare for an exam.', answers: [
-      {text:'Revise notes',points:28},{text:'Practise past papers',points:22},{text:'Study with a friend',points:18},
-      {text:'Make flashcards',points:14},{text:'Ask the teacher',points:10},{text:'Watch tutorials',points:8}]},
-  ]},
+  set('The English-Speaking World', 'Culture', G3,
+    'Name an English-speaking country.|USA:30|United Kingdom:26|Australia:18|Canada:14|Ireland:8|New Zealand:4',
+    'Name a British or American symbol.|Big Ben:24|Statue of Liberty:22|Red double-decker bus:18|Union Jack:16|White House:12|London Eye:8',
+    'Name a city in the UK.|London:44|Manchester:20|Liverpool:16|Edinburgh:12|Birmingham:8',
+    'Name a city in the USA.|New York:38|Los Angeles:24|Chicago:14|Washington:12|Las Vegas:8|Miami:4',
+    'Name a typical British food.|Fish and chips:40|English breakfast:24|Pudding:14|Roast beef:12|Scones:10',
+    'Name a sport that is popular in Britain.|Football:36|Rugby:24|Cricket:20|Tennis:14|Golf:6'),
+
+  set('School Life and Future Plans', 'School', G3,
+    'Name a school subject you will need in life.|English:28|Maths:26|IT:20|Your own language:14|Physics:8|Chemistry:4',
+    'What do you want to do after primary school?|Go to secondary school:34|Go to grammar school:24|Learn a trade:18|Study languages:12|Take an entrance exam:8',
+    'Name a reason to learn English.|Travelling:30|Work:24|Films and music:18|The internet:16|School:8|Friends abroad:4',
+    'What is difficult about school?|Exams:28|Early mornings:24|Homework:20|Long lessons:16|Getting up:8|Marks:4',
+    'What would you change about school?|A later start:30|Fewer lessons:24|Better food:18|More sport:14|More trips:10|Newer computers:4',
+    'What do you need to do well at school?|Hard work:30|Attention in class:24|Homework:18|Good teachers:16|Support at home:12'),
 ];
