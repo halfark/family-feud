@@ -61,9 +61,10 @@ async function waitForServer(tries = 40) {
 (async () => {
   section('Seed');
   const seedOut = execFileSync('node', ['seed.js'], { env, encoding: 'utf8' });
-  check(/Přidáno|už v databázi/.test(seedOut), 'seed proběhl');
+  check(/Výchozí sady:/.test(seedOut), 'seed proběhl');
   const seedOut2 = execFileSync('node', ['seed.js'], { env, encoding: 'utf8' });
-  check(/už v databázi/.test(seedOut2), 'seed je idempotentní');
+  check(/beze změny/.test(seedOut2) && !/aktualizováno/.test(seedOut2),
+    'druhý běh seedu už nic nemění');
 
   const server = spawn('node', ['server.js'], { env, stdio: ['ignore', 'pipe', 'pipe'] });
   let serverLog = '';
@@ -97,12 +98,12 @@ async function waitForServer(tries = 40) {
 
     // každá výchozí sada musí mít aspoň 6 otázek
     const allSets = (await req('GET', '/api/sets')).json?.sets || [];
-    const thin = allSets.filter(x => x.question_count < 6);
+    const thin = allSets.filter(x => x.question_count < 10);
     check(thin.length === 0,
-      thin.length ? `sady pod 6 otázek: ${thin.map(x => x.title).join(', ')}`
-                  : `všech ${allSets.length} sad má aspoň 6 otázek`);
+      thin.length ? `sady pod 10 otázek: ${thin.map(x => x.title).join(', ')}`
+                  : `všech ${allSets.length} sad má aspoň 10 otázek`);
     const totalQ = allSets.reduce((a, x) => a + x.question_count, 0);
-    check(totalQ >= 240, `celkem ${totalQ} otázek v databázi`);
+    check(totalQ >= 400, `celkem ${totalQ} otázek v databázi`);
 
     for (const lang of ['cs', 'en']) {
       const r = await req('GET', `/api/sets?lang=${lang}`);

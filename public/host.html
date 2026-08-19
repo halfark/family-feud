@@ -11,6 +11,9 @@
     color:var(--muted);cursor:pointer;font-family:'Barlow Condensed',sans-serif;font-size:.92rem;line-height:1.3;transition:.15s}
   .qbtn:hover{background:rgba(245,197,24,.06);color:#fff}
   .qbtn.active{background:rgba(245,197,24,.12);color:var(--gold);border-left-color:var(--gold);font-weight:600}
+  .qbtn.used{opacity:.5}
+  .qbtn.used .qmark{color:var(--green-br)}
+  .qbtn .qmark{display:inline-block;min-width:20px;color:var(--gold);font-weight:600}
   .arow{display:flex;align-items:center;gap:.6rem;background:#0d1525;border:1px solid var(--line);
     border-radius:7px;padding:.5rem .8rem;transition:.15s;cursor:pointer}
   .arow:hover{border-color:var(--tile-line)}
@@ -54,7 +57,12 @@
     </div>
 
     <div class="card" style="padding:.6rem 0">
-      <div class="card-title" style="padding:0 1.25rem" data-i18n="ho_qlist"></div>
+      <div style="display:flex;align-items:center;gap:.5rem;padding:0 1.25rem">
+        <div class="card-title" style="margin:0" data-i18n="ho_qlist"></div>
+        <span id="qcount" style="font-size:.78rem;color:var(--muted);margin-left:auto"></span>
+        <button class="btn btn-ghost btn-sm" style="padding:.15rem .5rem;font-size:.72rem"
+                onclick="clearUsed()" data-i18n="ho_clear_used"></button>
+      </div>
       <div id="qlist" style="max-height:330px;overflow-y:auto"></div>
     </div>
 
@@ -173,7 +181,7 @@
 const S = {
   setId:null, setTitle:'', questions:[], qi:-1,
   revealed:[], strikes:0, scores:[0,0], names:["",""],
-  turn:0, phase:'intro', sfx:true, volume:0.7
+  turn:0, phase:'intro', sfx:true, volume:0.7, used:[]
 };
 let ch, displayWin = null, playCounted = new Set();
 
@@ -220,7 +228,7 @@ async function loadSet(id){
   try{
     const { set } = await api.get('/api/sets/'+id);
     S.setId = set.id; S.setTitle = set.title; S.questions = set.questions;
-    S.qi = -1; S.revealed = []; S.strikes = 0; S.phase = 'intro';
+    S.qi = -1; S.revealed = []; S.strikes = 0; S.phase = 'intro'; S.used = [];
     document.getElementById('setinfo').innerHTML =
       `${escapeHtml(set.topic)} · ${escapeHtml(set.grade)} · ${set.questions.length} otázek · ▶ ${set.playCount}×`;
     renderQList(); pushState();
@@ -229,8 +237,13 @@ async function loadSet(id){
 }
 
 function renderQList(){
-  document.getElementById('qlist').innerHTML = S.questions.map((q,i)=>
-    `<button class="qbtn ${i===S.qi?'active':''}" onclick="goQ(${i})">${i+1}. ${escapeHtml(q.question)}</button>`).join('');
+  document.getElementById('qlist').innerHTML = S.questions.map((q,i)=>{
+    const used = S.used.includes(i);
+    return `<button class="qbtn ${i===S.qi?'active':''} ${used?'used':''}" onclick="goQ(${i})">
+      <span class="qmark">${used?'✓':(i+1)+'.'}</span> ${escapeHtml(q.question)}</button>`;
+  }).join('');
+  const c = document.getElementById('qcount');
+  if(c) c.textContent = S.questions.length ? `${S.used.length}/${S.questions.length}` : '';
 }
 
 // ================= HERNÍ AKCE =================
@@ -238,6 +251,7 @@ function goQ(i){
   if(i<0 || i>=S.questions.length) return;
   const first = S.phase !== 'play';
   S.qi=i; S.revealed=[]; S.strikes=0; S.phase='play';
+  if(!S.used.includes(i)) S.used.push(i);
   if(S.setId && !playCounted.has(S.setId)){
     playCounted.add(S.setId);
     api.post(`/api/sets/${S.setId}/play`).catch(()=>{});
@@ -312,8 +326,17 @@ function renderHost(){
   document.getElementById('t2score').textContent = S.scores[1];
   document.getElementById('tc1').classList.toggle('turn', S.turn===0);
   document.getElementById('tc2').classList.toggle('turn', S.turn===1);
-  document.querySelectorAll('.qbtn').forEach((b,i)=>b.classList.toggle('active', i===S.qi));
+  document.querySelectorAll('.qbtn').forEach((b,i)=>{
+    b.classList.toggle('active', i===S.qi);
+    b.classList.toggle('used', S.used.includes(i));
+    const mk=b.querySelector('.qmark');
+    if(mk) mk.textContent = S.used.includes(i) ? '✓' : (i+1)+'.';
+  });
+  const c=document.getElementById('qcount');
+  if(c) c.textContent = S.questions.length ? `${S.used.length}/${S.questions.length}` : '';
 }
+
+function clearUsed(){ S.used=[]; renderQList(); }
 
 // ================= NÁVOD =================
 function renderTutorial(){

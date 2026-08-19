@@ -112,10 +112,12 @@ Editace už schválené sady ji vrací zpět ke schválení.
 
 ## Databáze otázek
 
-Seed naplní obě jazykové větve: **40 sad / 240 otázek**, každá sada má minimálně
-6 otázek, takže vydrží na celou vyučovací hodinu.
+Seed naplní obě jazykové větve: **40 sad / 400 otázek**, každá sada má přesně
+10 otázek. Učitel si v panelu moderátora vybere, které z nich a v jakém pořadí
+týmům položí — na hodinu obvykle stačí tři až pět. Použité otázky se v seznamu
+odškrtnou ✓, takže se v nich neztratíš a příště můžeš pokračovat jinými.
 
-### 🇨🇿 Česká — 15 sad, 90 otázek
+### 🇨🇿 Česká — 15 sad, 150 otázek
 
 | Ročník | Sad | Témata |
 |---|---|---|
@@ -123,7 +125,7 @@ Seed naplní obě jazykové větve: **40 sad / 240 otázek**, každá sada má m
 | 4.–5. třída | 6 | ptáci a hmyz, zdravý životní styl, sport, povolání, lidské tělo, rostliny |
 | 6.–9. třída | 4 | škola a učení, Česko, vesmír, český jazyk |
 
-### 🇬🇧 Anglická ESL — 25 sad, 150 otázek
+### 🇬🇧 Anglická ESL — 25 sad, 250 otázek
 
 | Úroveň | Sad | Témata |
 |---|---|---|
@@ -133,6 +135,22 @@ Seed naplní obě jazykové větve: **40 sad / 240 otázek**, každá sada má m
 
 Anglické sady jsou psané jako survey otázky („Name a pet.“, „What do you do in your
 free time?“), takže procvičují produktivní slovní zásobu, ne jen pasivní rozpoznávání.
+
+### Aktualizace sad bez ztráty dat
+
+Výchozí sady jsou v databázi označené sloupcem `builtin_key` (např. `cs:Vesmír`).
+Díky tomu je **`node seed.js` bezpečné pustit i nad běžící instalací** — v Coolify
+se spouští automaticky při každém deployi:
+
+- výchozí sadě se přepíše obsah, téma a ročník na aktuální verzi,
+- **zůstanou** hodnocení, komentáře, počet odehraných her i to, jestli ji admin
+  přepnul na soukromou,
+- sad vytvořených uživateli se skript nedotkne vůbec,
+- sady z dřívějších verzí, které klíč ještě nemají, se převezmou — nevznikne duplikát.
+
+Databázi tedy pro aktualizaci obsahu není potřeba mazat. Chování ověřuje
+`npm run test:upgrade`, který nasimuluje provoz (uživatel, vlastní sada, hodnocení,
+42 odehraných her) a zkontroluje, že to redeploy přežije.
 
 ### Jak jsou sady zapsané
 
@@ -146,7 +164,7 @@ set('Zvířata kolem nás', 'Přírodověda', '1.–3. třída',
   …)
 ```
 
-Parser v `seed-util.js` zápis rozbalí a rovnou hlídá pravidla: minimálně 6 otázek
+Parser v `seed-util.js` zápis rozbalí a rovnou hlídá pravidla: minimálně 10 otázek
 na sadu, 2–8 odpovědí na otázku, body 1–99. Když něco nesedí, seed spadne
 s konkrétní chybou místo aby uložil rozbitou sadu.
 
@@ -231,13 +249,16 @@ a spolehni se na vestavěnou registraci + CAPTCHA + moderaci.
 ## Testy
 
 ```bash
-npm test
+npm test              # obojí
+npm run test:smoke    # jen API a stránky
+npm run test:upgrade  # jen bezpečnost redeploye
 ```
 
 Smoke test (`test/smoke.js`) nastartuje server nad dočasnou databází a projde
 47 kontrol: seed a jeho idempotence, dostupnost všech stránek, oddělení jazyků,
 CAPTCHA, ověření e-mailu, moderační frontu, oprávnění, hodnocení, statistiky,
-zvukový engine a validaci.
+zvukový engine a validaci. Upgrade test (`test/upgrade.js`) přidává dalších 14
+kontrol nad simulovanou nasazenou instancí.
 Nepotřebuje žádnou testovací knihovnu, takže projekt nemá dev závislosti.
 
 GitHub Actions (`.github/workflows/ci.yml`) navíc při každém pushi:
@@ -258,8 +279,8 @@ GitHub Actions (`.github/workflows/ci.yml`) navíc při každém pushi:
 ├── auth.js             JWT, CAPTCHA, odesílání e-mailů
 ├── seed.js             zápis sad do DB + admin účet
 ├── seed-util.js        parser kompaktního zápisu a validace
-├── seed-cs.js          české sady (15 × 6 otázek)
-├── seed-en.js          anglické ESL sady (25 × 6 otázek)
+├── seed-cs.js          české sady (15 × 10 otázek)
+├── seed-en.js          anglické ESL sady (25 × 10 otázek)
 ├── public/
 │   ├── index.html      rozcestník CS / EN
 │   ├── catalog.html    katalog sad
@@ -272,7 +293,8 @@ GitHub Actions (`.github/workflows/ci.yml`) navíc při každém pushi:
 │   ├── i18n.js         překlady a přepínání jazyka
 │   ├── app.js          API klient, přihlášení, navigace
 │   └── style.css
-├── test/smoke.js       smoke test
+├── test/smoke.js       smoke test API a stránek
+├── test/upgrade.js     test bezpečného redeploye
 └── Dockerfile          bez VOLUME (viz nasazení)
 ```
 

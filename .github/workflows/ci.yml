@@ -67,6 +67,13 @@ jobs:
             console.log('OK – cs:', m.counts.cs, 'en:', m.counts.en);
           "
 
+      - name: Verify seed is safe to re-run over live data
+        run: |
+          docker exec feud node seed.js
+          docker exec feud node seed.js | grep -q "beze změny" \
+            && echo "OK – opakovaný seed nic nemění" \
+            || (echo "Seed není idempotentní!"; exit 1)
+
       - name: Verify data survives restart
         run: |
           docker restart feud

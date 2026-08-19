@@ -22,35 +22,71 @@ function seed() {
   }
   const admin = db.prepare('SELECT id, display_name FROM users WHERE email = ?').get(adminEmail);
 
-  // --- Otázky (dvojjazyčně, idempotentně po dvojici title+language) --------
+  // --- Výchozí sady ---------------------------------------------------------
+  // Sady dodávané se seedem se poznají podle builtin_key ("cs:Název").
+  // Při opakovaném běhu se jejich OBSAH aktualizuje, ale zachová se:
+  //   • hodnocení a komentáře (leží v jiné tabulce, klíčované přes set_id)
+  //   • počet odehraných her (play_count i tabulka plays)
+  //   • rozhodnutí admina o viditelnosti a stavu
+  // Sad vytvořených uživateli se skript nikdy nedotkne.
   const EN = require('./seed-en');
-  const exists = db.prepare('SELECT id FROM sets WHERE title = ? AND language = ?');
-  const insert = db.prepare(`INSERT INTO sets
-    (title, topic, grade, language, data_json, author_id, author_name,
-     status, visibility, play_count, created_at, reviewed_at)
-    VALUES (?, ?, ?, ?, ?, ?, ?, 'approved', 'public', 0, ?, ?)`);
 
-  let added = { cs: 0, en: 0 };
+  const byKey    = db.prepare('SELECT * FROM sets WHERE builtin_key = ?');
+  const legacy   = db.prepare(`SELECT * FROM sets
+                               WHERE builtin_key IS NULL AND title = ? AND language = ?
+                                 AND author_id = ?`);
+  const adopt    = db.prepare('UPDATE sets SET builtin_key = ? WHERE id = ?');
+  const update   = db.prepare(`UPDATE sets
+                               SET topic = ?, grade = ?, data_json = ? WHERE id = ?`);
+  const insert   = db.prepare(`INSERT INTO sets
+    (title, topic, grade, language, data_json, author_id, author_name,
+     status, visibility, play_count, created_at, reviewed_at, builtin_key)
+    VALUES (?, ?, ?, ?, ?, ?, ?, 'approved', 'public', 0, ?, ?, ?)`);
+
+  const stat = { added: 0, updated: 0, same: 0, adopted: 0 };
+
   const tx = db.transaction(() => {
     for (const [lang, list] of [['cs', SEED_SETS_CS], ['en', EN]]) {
       for (const s of list) {
-        if (exists.get(s.title, lang)) continue;
-        insert.run(s.title, s.topic, s.grade, lang,
-          JSON.stringify({ questions: s.questions }),
-          admin.id, admin.display_name, now, now);
-        added[lang]++;
+        const key = `${lang}:${s.title}`;
+        const json = JSON.stringify({ questions: s.questions });
+
+        let row = byKey.get(key);
+
+        // Sada z dřívější verze, která ještě klíč nemá → převezmeme ji.
+        if (!row) {
+          const old = legacy.get(s.title, lang, admin.id);
+          if (old) { adopt.run(key, old.id); row = byKey.get(key); stat.adopted++; }
+        }
+
+        if (!row) {
+          insert.run(s.title, s.topic, s.grade, lang, json,
+            admin.id, admin.display_name, now, now, key);
+          stat.added++;
+        } else if (row.data_json !== json || row.topic !== s.topic || row.grade !== s.grade) {
+          update.run(s.topic, s.grade, json, row.id);
+          stat.updated++;
+        } else {
+          stat.same++;
+        }
       }
     }
   });
   tx();
 
   const tot = db.prepare('SELECT language, COUNT(*) c FROM sets GROUP BY language').all();
-  if (added.cs || added.en) {
-    console.log(`\u2713 Přidáno: ${added.cs} českých, ${added.en} anglických sad.`);
-  } else {
-    console.log('• Všechny výchozí sady už v databázi jsou.');
-  }
-  console.log('  Stav DB:', tot.map(r => `${r.language}=${r.c}`).join(', '));
+  const parts = [];
+  if (stat.added)   parts.push(`${stat.added} přidáno`);
+  if (stat.updated) parts.push(`${stat.updated} aktualizováno`);
+  if (stat.adopted) parts.push(`${stat.adopted} převzato z dřívější verze`);
+  if (stat.same)    parts.push(`${stat.same} beze změny`);
+  console.log(`\u2713 Výchozí sady: ${parts.join(', ')}.`);
+
+  const userSets = db.prepare('SELECT COUNT(*) c FROM sets WHERE builtin_key IS NULL').get().c;
+  const ratings  = db.prepare('SELECT COUNT(*) c FROM ratings').get().c;
+  const plays    = db.prepare('SELECT COUNT(*) c FROM plays').get().c;
+  console.log('  Stav DB:', tot.map(r => `${r.language}=${r.c}`).join(', '),
+    `| uživatelských sad: ${userSets} | hodnocení: ${ratings} | odehráno: ${plays}`);
 }
 
 seed();

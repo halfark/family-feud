@@ -103,6 +103,7 @@ const DICT = {
   ho_disp_hint: { cs: 'Okno přetáhněte na projektor / druhou obrazovku a dejte fullscreen (F11).',
                   en: 'Drag the window to the projector / second screen and press F11 for fullscreen.' },
   ho_qlist:     { cs: 'Otázky v sadě',        en: 'Questions in set' },
+  ho_clear_used: { cs: 'Odznačit',            en: 'Reset marks' },
   ho_keys:      { cs: 'Klávesové zkratky',    en: 'Keyboard shortcuts' },
   ho_k_reveal:  { cs: 'odhalit odpověď',      en: 'reveal answer' },
   ho_k_strike:  { cs: 'chyba',                en: 'strike' },

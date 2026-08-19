@@ -7,7 +7,9 @@
   "scripts": {
     "start": "node server.js",
     "seed": "node seed.js",
-    "test": "node test/smoke.js"
+    "test": "node test/smoke.js && node test/upgrade.js",
+    "test:smoke": "node test/smoke.js",
+    "test:upgrade": "node test/upgrade.js"
   },
   "dependencies": {
     "bcryptjs": "^2.4.3",

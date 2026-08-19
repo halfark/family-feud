@@ -26,8 +26,8 @@ function q(line) {
 
 function set(title, topic, grade, ...lines) {
   const questions = lines.map(q);
-  if (questions.length < 6)
-    throw new Error(`Sada "${title}" má jen ${questions.length} otázek, minimum je 6.`);
+  if (questions.length < 10)
+    throw new Error(`Sada "${title}" má jen ${questions.length} otázek, minimum je 10.`);
   for (const item of questions) {
     if (item.answers.length < 2 || item.answers.length > 8)
       throw new Error(`Otázka "${item.question}" má ${item.answers.length} odpovědí (povoleno 2–8).`);

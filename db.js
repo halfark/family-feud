@@ -73,4 +73,15 @@ if (!cols.includes('language')) {
 }
 db.exec(`CREATE INDEX IF NOT EXISTS idx_sets_lang ON sets(language, status, visibility)`);
 
+// ---- Migrace: builtin_key označuje sady dodávané se seedem ------------------
+// Díky němu umí `node seed.js` aktualizovat výchozí sady, aniž by sáhl na sady
+// vytvořené uživateli nebo přišel o hodnocení a počty odehraných her.
+const cols2 = db.prepare("PRAGMA table_info(sets)").all().map(c => c.name);
+if (!cols2.includes('builtin_key')) {
+  db.exec(`ALTER TABLE sets ADD COLUMN builtin_key TEXT`);
+  console.log('\u2713 Migrace: přidán sloupec sets.builtin_key');
+}
+db.exec(`CREATE UNIQUE INDEX IF NOT EXISTS idx_sets_builtin
+         ON sets(builtin_key) WHERE builtin_key IS NOT NULL`);
+
 module.exports = db;
