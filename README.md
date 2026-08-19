@@ -54,8 +54,35 @@ V okně moderátora klikni na **„Otevřít okno pro žáky“**, okno přetáh
 | `T` | přepnout, kdo je na tahu |
 | `F` | zapnout/vypnout zvuk |
 
-Zvukové efekty se generují přes WebAudio (žádné externí soubory).
-V okně žáků jednou klikni, aby prohlížeč povolil přehrávání.
+### Zvuk a znělky
+
+Všechny zvuky se syntetizují přímo v prohlížeči přes WebAudio — projekt nemá
+jediný zvukový soubor a nic se nestahuje. Engine (`public/audio.js`) staví
+žesťový hlas z rozladěných pil, zvonkohru, bas, činel, bzučák a potlesk
+z filtrovaného šumu, to celé přes kompresor a dozvuk.
+
+| Událost | Zvuk |
+|---|---|
+| Úvodní obrazovka, tlačítko *Přehrát znělku* | `theme` — fanfára, ~3,4 s |
+| První otázka v sadě | `roundStart` |
+| Odhalení odpovědi | `reveal`, u odpovědi č. 1 slavnostnější `revealTop` |
+| Chyba | `strike`, u třetí `strikeOut` |
+| Připsání bodů kola | `score` — vzestupná fanfára a potlesk |
+| Vyhlášení vítěze | `win` — velká fanfára s potleskem |
+
+Hlasitost se řídí posuvníkem v panelu moderátora a přenáší se do okna žáků.
+V okně žáků je potřeba jednou kliknout, aby prohlížeč povolil přehrávání
+(autoplay policy) — vybízí k tomu blikající nápis na úvodní obrazovce.
+
+> Znělky jsou **původní motivy** v žánru televizních soutěží. Nejde o přepis
+> hudby z pořadu Family Feud ani jiné chráněné skladby.
+
+### Návod pro učitele
+
+Při prvním otevření panelu moderátora vyskočí návod v pěti krocích
+(druhé okno → výběr sady → odhalování → chyby → připsání bodů), lokalizovaný
+do obou jazyků. Dá se zavřít natrvalo zaškrtnutím *Příště nezobrazovat*
+a kdykoli znovu otevřít tlačítkem **?** v hlavičce.
 
 ---
 
@@ -188,8 +215,9 @@ npm test
 ```
 
 Smoke test (`test/smoke.js`) nastartuje server nad dočasnou databází a projde
-38 kontrol: seed a jeho idempotence, dostupnost všech stránek, oddělení jazyků,
-CAPTCHA, ověření e-mailu, moderační frontu, oprávnění, hodnocení, statistiky a validaci.
+45 kontrol: seed a jeho idempotence, dostupnost všech stránek, oddělení jazyků,
+CAPTCHA, ověření e-mailu, moderační frontu, oprávnění, hodnocení, statistiky,
+zvukový engine a validaci.
 Nepotřebuje žádnou testovací knihovnu, takže projekt nemá dev závislosti.
 
 GitHub Actions (`.github/workflows/ci.yml`) navíc při každém pushi:
@@ -218,6 +246,7 @@ GitHub Actions (`.github/workflows/ci.yml`) navíc při každém pushi:
 │   ├── create.html     tvorba a import sad
 │   ├── admin.html      moderace
 │   ├── stats.html      statistiky
+│   ├── audio.js        syntéza zvuků a znělek (WebAudio)
 │   ├── i18n.js         překlady a přepínání jazyka
 │   ├── app.js          API klient, přihlášení, navigace
 │   └── style.css

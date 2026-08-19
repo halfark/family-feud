@@ -128,6 +128,7 @@ const DICT = {
   ho_turn:      { cs: '⇄ Na tahu (T)',        en: '⇄ Team turn (T)' },
   ho_intro:     { cs: 'Úvodní obrazovka',     en: 'Intro screen' },
   ho_reset:     { cs: 'Reset skóre',          en: 'Reset scores' },
+  ho_winner:    { cs: 'Vyhlásit vítěze',      en: 'Announce winner' },
   ho_sfx:       { cs: 'Zvukové efekty (F)',   en: 'Sound effects (F)' },
   ho_scores:    { cs: 'Skóre týmů',           en: 'Team scores' },
   ho_award1:    { cs: 'Body kola → Tým 1 (Q)', en: 'Round points → Team 1 (Q)' },
@@ -216,6 +217,44 @@ const DICT = {
   ad_t_reg:     { cs: 'Registrace',           en: 'Registered' },
   ad_verified:  { cs: 'ověřen',               en: 'verified' },
   ad_unverified:{ cs: 'neověřen',             en: 'unverified' },
+
+
+  // --- zvuky ---
+  snd_title:    { cs: 'Zvuk',                  en: 'Sound' },
+  snd_on:       { cs: 'Zvukové efekty (F)',    en: 'Sound effects (F)' },
+  snd_vol:      { cs: 'Hlasitost',             en: 'Volume' },
+  snd_test:     { cs: '♪ Přehrát znělku',      en: '♪ Play theme' },
+  snd_locked:   { cs: 'Klikněte kamkoli v okně žáků, aby prohlížeč povolil zvuk.',
+                  en: 'Click anywhere in the student window to let the browser enable sound.' },
+
+  // --- návod ---
+  tut_open:     { cs: 'Návod',                 en: 'How to play' },
+  tut_title:    { cs: 'Jak hrát',              en: 'How to play' },
+  tut_intro:    { cs: 'Soutěž pro dva týmy. Žáci hádají nejčastější odpovědi z ankety — čím častější odpověď, tím víc bodů.',
+                  en: 'A game for two teams. Students guess the most common survey answers — the more common the answer, the more points.' },
+  tut_1_t:      { cs: '1. Otevřete druhé okno',  en: '1. Open the second window' },
+  tut_1_d:      { cs: 'Klikněte na „Otevřít okno pro žáky“ a okno přetáhněte na projektor (F11 = celá obrazovka). Vy vidíte odpovědi i body, žáci jen prázdnou tabuli.',
+                  en: 'Click "Open student window" and drag it to the projector (F11 for fullscreen). You see the answers and points; students see only the empty board.' },
+  tut_2_t:      { cs: '2. Vyberte sadu a otázku', en: '2. Pick a set and a question' },
+  tut_2_d:      { cs: 'Nahoře vlevo vyberte sadu podle předmětu a ročníku, pak klikněte na otázku v seznamu. Otázka se objeví na tabuli.',
+                  en: 'Choose a set by subject and grade on the left, then click a question in the list. It appears on the board.' },
+  tut_3_t:      { cs: '3. Odhalujte odpovědi',   en: '3. Reveal answers' },
+  tut_3_d:      { cs: 'Když tým odpoví správně, klikněte na odpověď nebo zmáčkněte její číslo (1–8). Odpověď se otočí na tabuli i s body.',
+                  en: 'When a team answers correctly, click the answer or press its number (1–8). It flips over on the board with its points.' },
+  tut_4_t:      { cs: '4. Počítejte chyby',      en: '4. Count strikes' },
+  tut_4_d:      { cs: 'Za špatnou odpověď zmáčkněte X nebo mezerník — na tabuli se objeví velký křížek. Po třech chybách kolo pro tým končí.',
+                  en: 'Press X or Space for a wrong answer — a big cross appears on the board. After three strikes the team loses the round.' },
+  tut_5_t:      { cs: '5. Připište body',        en: '5. Award the points' },
+  tut_5_d:      { cs: 'Na konci kola zmáčkněte Q (tým 1) nebo W (tým 2). Nasbírané body kola se připíšou týmu a tabule se připraví na další otázku.',
+                  en: 'At the end of a round press Q (team 1) or W (team 2). The round points go to that team and the board resets for the next question.' },
+  tut_tip:      { cs: 'Tip: celou hru zvládnete z klávesnice — přehled zkratek máte vlevo dole.',
+                  en: 'Tip: you can run the whole game from the keyboard — the shortcut list is at the bottom left.' },
+  tut_close:    { cs: 'Rozumím, jdeme hrát',   en: "Got it, let's play" },
+  tut_never:    { cs: 'Příště nezobrazovat',   en: "Don't show again" },
+
+  // --- intro na tabuli ---
+  di_intro_hint:{ cs: 'Kliknutím sem povolíte zvuk',
+                  en: 'Click here to enable sound' },
 
   // --- statistiky ---
   stt_sets:     { cs: 'Sad otázek',           en: 'Question sets' },

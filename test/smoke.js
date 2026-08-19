@@ -76,13 +76,19 @@ async function waitForServer(tries = 40) {
     section('Statické stránky');
     for (const p of ['/', '/catalog.html', '/host.html', '/display.html',
                      '/create.html', '/admin.html', '/stats.html',
-                     '/app.js', '/i18n.js', '/style.css']) {
+                     '/app.js', '/i18n.js', '/audio.js', '/style.css']) {
       const r = await req('GET', p);
       check(r.status === 200, `${p} → 200`);
     }
     const land = await req('GET', '/');
     check(/5 proti 5/.test(land.text) && /Family Feud/.test(land.text),
       'rozcestník nabízí obě jazykové verze');
+
+    section('Zvukový engine');
+    const audioSrc = (await req('GET', '/audio.js')).text;
+    check(/FFAudio/.test(audioSrc), 'audio.js se servíruje');
+    for (const snd of ['theme', 'reveal', 'strike', 'score', 'win'])
+      check(new RegExp(`\\b${snd}\\b`).test(audioSrc), `zvuk "${snd}" je definován`);
 
     section('Dvojjazyčná databáze');
     const meta = await req('GET', '/api/sets/meta');

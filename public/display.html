@@ -66,6 +66,24 @@
     38%{transform:scale(1)}78%{opacity:1}100%{opacity:0;transform:scale(.92)}}
 
   .offline{position:fixed;bottom:14px;left:14px;font-size:.8rem;color:var(--faint);letter-spacing:1px}
+
+  /* animované pruhy nad úvodním nápisem */
+  .introbars{display:flex;gap:6px;align-items:flex-end;height:54px;margin-bottom:1.2rem}
+  .introbars i{display:block;width:11px;background:linear-gradient(180deg,var(--gold-lt),var(--gold-dk));
+    border-radius:3px;animation:eq 1.25s ease-in-out infinite}
+  .introbars i:nth-child(1){animation-delay:0s}    .introbars i:nth-child(2){animation-delay:.13s}
+  .introbars i:nth-child(3){animation-delay:.26s}  .introbars i:nth-child(4){animation-delay:.39s}
+  .introbars i:nth-child(5){animation-delay:.52s}  .introbars i:nth-child(6){animation-delay:.65s}
+  .introbars i:nth-child(7){animation-delay:.78s}
+  @keyframes eq{0%,100%{height:14%}50%{height:100%}}
+  .intro .big{animation:pulseGlow 3s ease-in-out infinite}
+  @keyframes pulseGlow{0%,100%{text-shadow:0 0 40px rgba(245,197,24,.3)}
+    50%{text-shadow:0 0 85px rgba(245,197,24,.6)}}
+  .soundhint{margin-top:1.6rem;font-size:.85rem;letter-spacing:2px;color:var(--gold);
+    border:1px solid rgba(245,197,24,.4);border-radius:20px;padding:.45rem 1.1rem;
+    animation:blink 2.2s ease-in-out infinite;cursor:pointer}
+  .soundhint.hidden{display:none}
+  @keyframes blink{0%,100%{opacity:.45}50%{opacity:1}}
 </style>
 </head>
 <body>
@@ -80,8 +98,10 @@
   </div>
 
   <div class="intro" id="intro">
+    <div class="introbars"><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div>
     <div class="big" id="bigready"></div>
     <div class="sub" id="introsub"></div>
+    <div class="soundhint" id="soundhint"></div>
   </div>
 
   <div id="game" style="display:none;flex-direction:column;flex:1;min-height:0">
@@ -95,30 +115,21 @@
 <div class="offline" id="off"></div>
 
 <script src="/i18n.js"></script>
+<script src="/audio.js"></script>
 <script>
 const $ = id => document.getElementById(id);
 let prevRevealed = [], prevStrikes = 0, ac = null;
 
-// ---------- WebAudio efekty (bez externích souborů) ----------
-function tone(freq, dur, type='sine', vol=.18, delay=0){
-  try{
-    ac = ac || new (window.AudioContext||window.webkitAudioContext)();
-    const o=ac.createOscillator(), g=ac.createGain();
-    o.type=type; o.frequency.value=freq;
-    o.connect(g); g.connect(ac.destination);
-    const t=ac.currentTime+delay;
-    g.gain.setValueAtTime(0,t);
-    g.gain.linearRampToValueAtTime(vol,t+.02);
-    g.gain.exponentialRampToValueAtTime(.0001,t+dur);
-    o.start(t); o.stop(t+dur+.05);
-  }catch{}
+// ---------- Zvuk (FFAudio, viz audio.js) ----------
+let soundReady = false;
+function enableSound(){
+  if (soundReady) return;
+  soundReady = FFAudio.unlock();
+  if (soundReady) document.getElementById('soundhint')?.classList.add('hidden');
 }
-const SFX = {
-  reveal(){ tone(660,.16,'square',.14); tone(990,.22,'square',.11,.07); },
-  strike(){ tone(180,.5,'sawtooth',.2); tone(120,.6,'sawtooth',.16,.05); },
-  score(){ [523,659,784,1047].forEach((f,i)=>tone(f,.22,'triangle',.15,i*.09)); },
-  newq(){ tone(440,.14,'triangle',.13); tone(587,.2,'triangle',.13,.11); },
-};
+// autoplay policy: zvuk se odemkne prvním klikem / klávesou v tomto okně
+document.addEventListener('click', enableSound);
+document.addEventListener('keydown', enableSound);
 
 // ---------- Kanál ----------
 function applyTexts(){
@@ -126,6 +137,7 @@ function applyTexts(){
   $('bigready').textContent= t('di_ready');
   $('qlbl').textContent    = t('di_question');
   $('off').textContent     = t('di_offline');
+  $('soundhint').textContent = t('di_intro_hint');
   $('tn0').textContent     = t('team1');
   $('tn1').textContent     = t('team2');
   if(!$('introsub').textContent) $('introsub').textContent = t('di_waiting');
@@ -140,8 +152,12 @@ ch.onmessage = e => {
     if(e.data.lang && e.data.lang !== LANG){ setLang(e.data.lang); applyTexts(); }
     setOnline(true); render(e.data.s);
   }
-  if(e.data.type==='FX'){ SFX[e.data.kind]?.(); }
+  if(e.data.type==='FX'){ FFAudio.play(e.data.kind); }
   if(e.data.type==='HOST_GONE'){ setOnline(false); }
+  if(e.data.type==='AUDIO'){
+    FFAudio.setVolume(e.data.volume ?? 0.7);
+    FFAudio.setMuted(!!e.data.muted);
+  }
 };
 ch.postMessage({type:'HELLO'});
 setInterval(()=>ch.postMessage({type:'HELLO'}), 4000);
@@ -187,9 +203,7 @@ function render(s){
 
 function esc(t){ return String(t).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c])); }
 
-// odemknutí zvuku po prvním kliknutí (autoplay policy)
-document.addEventListener('click', ()=>{ if(!ac) tone(1,.01,'sine',.001); }, {once:true});
-document.addEventListener('keydown', e=>{ if(e.key==='f'||e.key==='F11') return; });
+
 </script>
 </body>
 </html>

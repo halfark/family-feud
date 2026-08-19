@@ -37,6 +37,7 @@
 <div class="topbar"><div class="topbar-in">
   <span class="brand">Family Feud</span><span class="badge" data-i18n="ho_badge"></span>
   <span class="conn"><span class="dot" id="dot"></span><span id="connTxt"></span></span>
+  <button class="btn btn-ghost btn-sm" onclick="openTutorial()" id="tutbtn">?</button>
   <nav class="nav" id="nav"></nav>
 </div></div>
 
@@ -106,10 +107,17 @@
         <div style="display:flex;gap:.4rem;flex-wrap:wrap">
           <button class="btn btn-ghost btn-sm" onclick="toggleTurn()" data-i18n="ho_turn"></button>
           <button class="btn btn-ghost btn-sm" onclick="showIntro()" data-i18n="ho_intro"></button>
+          <button class="btn btn-green btn-sm" onclick="announceWinner()">🏆 <span data-i18n="ho_winner"></span></button>
           <button class="btn btn-red btn-sm" onclick="resetGame()" data-i18n="ho_reset"></button>
         </div>
         <label style="display:block;margin-top:.6rem;font-size:.85rem;color:var(--muted);cursor:pointer">
-          <input type="checkbox" id="sfx" checked> <span data-i18n="ho_sfx"></span></label>
+          <input type="checkbox" id="sfx" checked> <span data-i18n="snd_on"></span></label>
+        <div style="display:flex;align-items:center;gap:.5rem;margin-top:.5rem">
+          <span style="font-size:.78rem;color:var(--muted)" data-i18n="snd_vol"></span>
+          <input type="range" id="vol" min="0" max="100" value="70" style="flex:1"
+                 oninput="onVolume(this.value)">
+          <button class="btn btn-ghost btn-sm" onclick="fx('theme')" data-i18n="snd_test"></button>
+        </div>
       </div>
     </div>
 
@@ -143,6 +151,21 @@
   </div>
 </div>
 
+<div class="modal-bg" id="tut-modal" onclick="if(event.target===this)closeTutorial()">
+  <div class="modal" style="max-width:620px">
+    <h2 data-i18n="tut_title"></h2>
+    <p style="font-family:Barlow,sans-serif;font-size:.95rem;color:var(--muted);line-height:1.6;margin-bottom:1.2rem"
+       data-i18n="tut_intro"></p>
+    <div id="tut-steps"></div>
+    <p style="font-size:.88rem;color:var(--gold);margin-top:1rem" data-i18n="tut_tip"></p>
+    <div style="display:flex;gap:.6rem;align-items:center;margin-top:1.4rem">
+      <button class="btn btn-gold" style="flex:1" onclick="closeTutorial()" data-i18n="tut_close"></button>
+      <label style="font-size:.82rem;color:var(--muted);cursor:pointer;white-space:nowrap">
+        <input type="checkbox" id="tut-never"> <span data-i18n="tut_never"></span></label>
+    </div>
+  </div>
+</div>
+
 <script src="/i18n.js"></script>
 <script src="/app.js"></script>
 <script>
@@ -150,7 +173,7 @@
 const S = {
   setId:null, setTitle:'', questions:[], qi:-1,
   revealed:[], strikes:0, scores:[0,0], names:["",""],
-  turn:0, phase:'intro', sfx:true
+  turn:0, phase:'intro', sfx:true, volume:0.7
 };
 let ch, displayWin = null, playCounted = new Set();
 
@@ -158,7 +181,7 @@ let ch, displayWin = null, playCounted = new Set();
 function initChannel(){
   ch = new BroadcastChannel('ff-game');
   ch.onmessage = e => {
-    if (e.data.type === 'HELLO') { setConn(true); pushState(); }
+    if (e.data.type === 'HELLO') { setConn(true); pushState(); pushAudio(); }
     if (e.data.type === 'BYE') setConn(false);
   };
   window.addEventListener('beforeunload', () => ch.postMessage({type:'HOST_GONE'}));
@@ -213,12 +236,13 @@ function renderQList(){
 // ================= HERNÍ AKCE =================
 function goQ(i){
   if(i<0 || i>=S.questions.length) return;
+  const first = S.phase !== 'play';
   S.qi=i; S.revealed=[]; S.strikes=0; S.phase='play';
   if(S.setId && !playCounted.has(S.setId)){
     playCounted.add(S.setId);
     api.post(`/api/sets/${S.setId}/play`).catch(()=>{});
   }
-  fx('newq'); pushState();
+  fx(first ? 'roundStart' : 'newq'); pushState();
 }
 const nextQ = () => goQ(S.qi+1);
 const prevQ = () => goQ(S.qi-1);
@@ -227,13 +251,19 @@ function toggle(i){
   if(S.phase!=='play') return;
   const q=S.questions[S.qi]; if(!q||!q.answers[i]) return;
   const at=S.revealed.indexOf(i);
-  if(at>=0) S.revealed.splice(at,1); else { S.revealed.push(i); fx('reveal'); }
+  if(at>=0) S.revealed.splice(at,1);
+  else { S.revealed.push(i); fx(i===0 ? 'revealTop' : 'reveal'); }
   pushState();
 }
 function revealAll(){ if(!S.questions[S.qi])return; S.revealed=S.questions[S.qi].answers.map((_,i)=>i); fx('reveal'); pushState(); }
 function hideAll(){ S.revealed=[]; pushState(); }
 
-function addStrike(){ if(S.strikes>=3)return; S.strikes++; fx('strike'); pushState(); }
+function addStrike(){
+  if(S.strikes>=3) return;
+  S.strikes++;
+  fx(S.strikes>=3 ? 'strikeOut' : 'strike');
+  pushState();
+}
 function clearStrikes(){ S.strikes=0; pushState(); }
 
 function roundPts(){
@@ -247,7 +277,16 @@ function awardRound(team){
 }
 function adj(team,d){ S.scores[team]=Math.max(0,S.scores[team]+d); pushState(); }
 function toggleTurn(){ S.turn = S.turn?0:1; pushState(); }
-function showIntro(){ S.phase='intro'; S.qi=-1; S.revealed=[]; S.strikes=0; pushState(); }
+function showIntro(){
+  S.phase='intro'; S.qi=-1; S.revealed=[]; S.strikes=0;
+  pushState(); fx('theme');
+}
+function announceWinner(){
+  fx('win');
+  const w = S.scores[0]===S.scores[1] ? null : (S.scores[0]>S.scores[1] ? 0 : 1);
+  ok(w===null ? '=' : `🏆 ${S.names[w]} — ${S.scores[w]}`);
+}
+
 function resetGame(){
   if(!confirm(t('ho_reset_c'))) return;
   S.scores=[0,0]; S.strikes=0; S.revealed=[]; pushState(); ok(t('ho_reset_ok'));
@@ -276,6 +315,36 @@ function renderHost(){
   document.querySelectorAll('.qbtn').forEach((b,i)=>b.classList.toggle('active', i===S.qi));
 }
 
+// ================= NÁVOD =================
+function renderTutorial(){
+  document.getElementById('tut-steps').innerHTML = [1,2,3,4,5].map(n=>`
+    <div style="display:flex;gap:.8rem;margin-bottom:.9rem">
+      <div style="flex:1">
+        <div style="font-weight:700;color:var(--gold);font-size:1rem">${t('tut_'+n+'_t')}</div>
+        <div style="font-family:Barlow,sans-serif;font-size:.9rem;color:var(--muted);line-height:1.55">
+          ${t('tut_'+n+'_d')}</div>
+      </div>
+    </div>`).join('');
+}
+function openTutorial(){
+  renderTutorial();
+  document.getElementById('tut-modal').classList.add('open');
+}
+function closeTutorial(){
+  if(document.getElementById('tut-never').checked)
+    localStorage.setItem('ff_tut_seen','1');
+  document.getElementById('tut-modal').classList.remove('open');
+}
+
+// ================= ZVUK =================
+function onVolume(v){
+  S.volume = Number(v)/100;
+  ch?.postMessage({ type:'AUDIO', volume:S.volume, muted:!S.sfx });
+}
+function pushAudio(){
+  ch?.postMessage({ type:'AUDIO', volume:S.volume, muted:!S.sfx });
+}
+
 // ================= KLÁVESY =================
 document.addEventListener('keydown', e=>{
   if(/^(INPUT|TEXTAREA|SELECT)$/.test(e.target.tagName)) return;
@@ -285,12 +354,12 @@ document.addEventListener('keydown', e=>{
     'x':addStrike,' ':addStrike,'c':clearStrikes,'q':()=>awardRound(0),'w':()=>awardRound(1),
     'n':nextQ,'p':prevQ,'r':revealAll,'t':toggleTurn,
     'f':()=>{ const c=document.getElementById('sfx'); c.checked=!c.checked; S.sfx=c.checked;
-              toast(c.checked ? t('ho_sfx_on') : t('ho_sfx_off')); }
+              pushAudio(); toast(c.checked ? t('ho_sfx_on') : t('ho_sfx_off')); }
   };
   if(map[k]){ e.preventDefault(); map[k](); }
 });
 
-document.getElementById('sfx').onchange = e => { S.sfx = e.target.checked; };
+document.getElementById('sfx').onchange = e => { S.sfx = e.target.checked; pushAudio(); };
 
 (async()=>{
   await bootstrap('play');
@@ -299,6 +368,7 @@ document.getElementById('sfx').onchange = e => { S.sfx = e.target.checked; };
   S.names = [t('team1'), t('team2')];
   setConn(false);
   initChannel(); await loadSets(); renderHost();
+  if(!localStorage.getItem('ff_tut_seen')) openTutorial();
 })();
 </script>
 </body>
