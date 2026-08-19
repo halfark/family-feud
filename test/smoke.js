@@ -111,6 +111,13 @@ async function waitForServer(tries = 40) {
     const totalQ = allSets.reduce((a, x) => a + x.question_count, 0);
     check(totalQ >= 400, `celkem ${totalQ} otázek v databázi`);
 
+    // sady Informatika podle ŠVP pro 4.–9. ročník
+    const it = allSets.filter(x => x.topic === 'Informatika');
+    check(it.length === 6, `${it.length} sad Informatiky`);
+    const years = new Set(it.map(x => x.grade));
+    check([4,5,6,7,8,9].every(n => years.has(`${n}. třída`)),
+      'Informatika pokrývá 4.–9. třídu');
+
     for (const lang of ['cs', 'en']) {
       const r = await req('GET', `/api/sets?lang=${lang}`);
       const langs = new Set((r.json?.sets || []).map(s => s.language));

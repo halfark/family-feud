@@ -115,18 +115,33 @@ Editace už schválené sady ji vrací zpět ke schválení.
 
 ## Databáze otázek
 
-Seed naplní obě jazykové větve: **40 sad / 400 otázek**, každá sada má přesně
+Seed naplní obě jazykové větve: **46 sad / 460 otázek**, každá sada má přesně
 10 otázek. Učitel si v panelu moderátora vybere, které z nich a v jakém pořadí
 týmům položí — na hodinu obvykle stačí tři až pět. Použité otázky se v seznamu
 odškrtnou ✓, takže se v nich neztratíš a příště můžeš pokračovat jinými.
 
-### 🇨🇿 Česká — 15 sad, 150 otázek
+### 🇨🇿 Česká — 21 sad, 210 otázek
 
 | Ročník | Sad | Témata |
 |---|---|---|
 | 1.–3. třída | 5 | zvířata, škola, jídlo, dopravní výchova, roční období a svátky |
 | 4.–5. třída | 6 | ptáci a hmyz, zdravý životní styl, sport, povolání, lidské tělo, rostliny |
 | 6.–9. třída | 4 | škola a učení, Česko, vesmír, český jazyk |
+| 4.–9. třída (po ročnících) | 6 | **Informatika** podle ŠVP — samostatná sada pro každý ročník |
+
+#### Informatika podle ŠVP
+
+Šest sad s ročníkovým označením (`4. třída` … `9. třída`), aby šlo vybrat přesně
+podle tematického plánu:
+
+| Ročník | Pokryté oblasti |
+|---|---|
+| 4. | ovládání digitálních zařízení, práce s daty, základní kódování, sdílené prostředí |
+| 5. | data, informační systémy, algoritmizace, Scratch a blokové programování, modelování |
+| 6. | kódování, šifrování, práce s daty, informační systémy, počítačové sítě, bezpečnost |
+| 7. | algoritmy, programování, podmínky, události, grafy a modelování |
+| 8. | programování, proměnné, parametry, tabulky, hromadné zpracování dat |
+| 9. | programovací projekty, hardware, operační systémy, sítě, internet, bezpečnost, digitální stopa |
 
 ### 🇬🇧 Anglická ESL — 25 sad, 250 otázek
 
@@ -258,7 +273,7 @@ npm run test:upgrade  # jen bezpečnost redeploye
 ```
 
 Smoke test (`test/smoke.js`) nastartuje server nad dočasnou databází a projde
-49 kontrol: seed a jeho idempotence, dostupnost všech stránek, oddělení jazyků,
+51 kontrol: seed a jeho idempotence, dostupnost všech stránek, oddělení jazyků,
 CAPTCHA, ověření e-mailu, moderační frontu, oprávnění, hodnocení, statistiky,
 zvukový engine a validaci. Upgrade test (`test/upgrade.js`) přidává dalších 14
 kontrol nad simulovanou nasazenou instancí.
@@ -282,7 +297,7 @@ GitHub Actions (`.github/workflows/ci.yml`) navíc při každém pushi:
 ├── auth.js             JWT, CAPTCHA, odesílání e-mailů
 ├── seed.js             zápis sad do DB + admin účet
 ├── seed-util.js        parser kompaktního zápisu a validace
-├── seed-cs.js          české sady (15 × 10 otázek)
+├── seed-cs.js          české sady (21 × 10 otázek, včetně Informatiky)
 ├── seed-en.js          anglické ESL sady (25 × 10 otázek)
 ├── public/
 │   ├── index.html      rozcestník CS / EN

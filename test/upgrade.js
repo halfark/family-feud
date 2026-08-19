@@ -11,6 +11,10 @@ const bcrypt = require('bcryptjs');
 const DATA_DIR = fs.mkdtempSync(path.join(os.tmpdir(), 'feud-upg-'));
 const env = { ...process.env, DATA_DIR, ADMIN_EMAIL: 'admin@test.cz', ADMIN_PASSWORD: 'x' };
 const ROOT = __dirname + '/..';
+const CS = require(ROOT + '/seed-cs');
+const EN = require(ROOT + '/seed-en');
+const EXPECT_SETS = CS.length + EN.length;
+const EXPECT_Q = [...CS, ...EN].reduce((a, s) => a + s.questions.length, 0);
 
 let pass = 0, fail = 0;
 const check = (c, m) => c ? (pass++, console.log('  \u2713 ' + m)) : (fail++, console.log('  \u2717 ' + m));
@@ -27,7 +31,7 @@ console.log(seed().trim().split('\n').map(l => '    ' + l).join('\n'));
 let db = open();
 
 const builtin = db.prepare('SELECT COUNT(*) c FROM sets WHERE builtin_key IS NOT NULL').get().c;
-check(builtin === 40, `${builtin} výchozích sad má builtin_key`);
+check(builtin === EXPECT_SETS, `${builtin} výchozích sad má builtin_key`);
 
 console.log('\n=== 2. Simulace provozu (uživatel, sada, hodnocení, hry) ===');
 const now = Date.now();
@@ -87,12 +91,13 @@ check(db.prepare("SELECT COUNT(*) c FROM sets WHERE title='Povolání'").get().c
 
 const counts = db.prepare(`SELECT language, COUNT(*) c FROM sets
                            WHERE builtin_key IS NOT NULL GROUP BY language`).all();
-check(counts.find(r => r.language === 'cs')?.c === 15 &&
-      counts.find(r => r.language === 'en')?.c === 25, 'stále 15 cs + 25 en výchozích sad');
+check(counts.find(r => r.language === 'cs')?.c === CS.length &&
+      counts.find(r => r.language === 'en')?.c === EN.length,
+      `stále ${CS.length} cs + ${EN.length} en výchozích sad`);
 
 const totalQ = db.prepare(`SELECT SUM((SELECT COUNT(*) FROM json_each(json_extract(data_json,'$.questions')))) n
                            FROM sets WHERE builtin_key IS NOT NULL`).get().n;
-check(totalQ === 400, `výchozí sady mají celkem ${totalQ} otázek`);
+check(totalQ === EXPECT_Q, `výchozí sady mají celkem ${totalQ} otázek`);
 
 console.log('\n=== 5. Třetí běh je bez změn ===');
 const out3 = seed();
