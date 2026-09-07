@@ -82,7 +82,8 @@
 let QS = [];
 const fileEl = document.getElementById('file');
 
-function blankQ(){ return { question:'', answers:[{text:'',points:''},{text:'',points:''},{text:'',points:''}] }; }
+function blankQ(){ return { question:'', difficulty:1,
+  answers:[{text:'',points:''},{text:'',points:''},{text:'',points:''}] }; }
 
 const GRADES = {
   cs: ['1.–3. třída','4.–5. třída','6.–9. třída',
@@ -108,6 +109,11 @@ function renderQs(){
         <span style="font-family:'Bebas Neue';font-size:1.4rem;color:var(--gold)">${qi+1}</span>
         <input class="input" placeholder="${t('cr_qph')}" value="${escapeHtml(q.question)}"
           oninput="QS[${qi}].question=this.value">
+        <select class="input" style="width:auto;flex:0 0 auto" title="${t('diff_tip')}"
+                onchange="QS[${qi}].difficulty=+this.value;renderQs()">
+          ${[1,2,3].map(d=>`<option value="${d}" ${(q.difficulty||1)===d?'selected':''}
+            >×${d} ${t('diff_'+d)}</option>`).join('')}
+        </select>
         <button class="xbtn" onclick="QS.splice(${qi},1);renderQs()" title="${t('cr_delq')}">✕</button>
       </div>
       <div style="display:grid;grid-template-columns:1fr 90px 34px;gap:.4rem;margin-bottom:.3rem">
@@ -136,7 +142,7 @@ function collect(){
     grade: document.getElementById('s-grade').value,
     language: document.getElementById('s-lang').value,
     visibility: document.getElementById('s-vis').value,
-    questions: QS.map(q=>({ question:q.question,
+    questions: QS.map(q=>({ question:q.question, difficulty:q.difficulty||1,
       answers:q.answers.filter(a=>String(a.text).trim() && a.points)
                        .map(a=>({text:a.text, points:parseInt(a.points,10)})) }))
               .filter(q=>q.question.trim() && q.answers.length>=2),
@@ -164,6 +170,7 @@ function loadJSON(obj){
   const qs = Array.isArray(obj.questions) ? obj.questions : [];
   if(!qs.length){ err(t('cr_nojson')); return; }
   QS = qs.map(q=>({ question:String(q.question||''),
+    difficulty:[1,2,3].includes(+q.difficulty) ? +q.difficulty : 1,
     answers:(q.answers||[]).map(a=>({text:String(a.text||''), points:a.points ?? ''})) }));
   renderQs(); ok(`${t('cr_loaded')}: ${QS.length} ${t('questions_n')}`);
 }
@@ -189,14 +196,14 @@ function dl(name, obj){
 function downloadTemplate(){
   const l = document.getElementById('s-lang').value;
   if(l==='en'){ dl('template-set.json',{ title:'My set', topic:'Vocabulary', grade:'Grade 6–7 (A1–A2)', language:'en', questions:[
-    { question:'Name a pet.', answers:[
+    { question:'Name a pet.', difficulty:1, answers:[
       {text:'Dog',points:40},{text:'Cat',points:32},{text:'Rabbit',points:16},{text:'Hamster',points:8}]},
-    { question:'Name a fruit.', answers:[
+    { question:'Name a fruit.', difficulty:2, answers:[
       {text:'Apple',points:36},{text:'Banana',points:28},{text:'Orange',points:20},{text:'Strawberry',points:10}]}]}); return; }
   dl('vzor-sady.json',{ title:'Moje sada', topic:'Přírodověda', grade:'4.–5. třída', language:'cs', questions:[
-    { question:'Jmenuj domácí zvíře.', answers:[
+    { question:'Jmenuj domácí zvíře.', difficulty:1, answers:[
       {text:'Pes',points:40},{text:'Kočka',points:32},{text:'Králík',points:14},{text:'Křeček',points:8}]},
-    { question:'Jmenuj ovoce.', answers:[
+    { question:'Jmenuj ovoce.', difficulty:2, answers:[
       {text:'Jablko',points:36},{text:'Banán',points:28},{text:'Hruška',points:20},{text:'Jahoda',points:10}]}]});
 }
 function exportCurrent(){ dl('moje-sada.json', collect()); }

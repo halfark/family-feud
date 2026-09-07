@@ -29,6 +29,11 @@
   .qbanner{text-align:center;padding:1.1rem 2rem;background:rgba(18,36,74,.75);
     border-bottom:2px solid var(--tile-line);flex-shrink:0}
   .qlbl{font-size:.75rem;letter-spacing:4px;color:var(--gold);text-transform:uppercase;margin-bottom:.3rem}
+  .dbadge{display:none;font-size:.72rem;font-weight:700;letter-spacing:2px;border-radius:20px;
+    padding:2px 10px;margin-left:.4rem}
+  .dbadge.on{display:inline-block}
+  .dbadge.d2{background:rgba(245,197,24,.2);color:var(--gold)}
+  .dbadge.d3{background:rgba(231,76,60,.2);color:#ff8a7a}
   .qtxt{font-size:clamp(1.2rem,2.9vw,2.3rem);font-weight:700;color:#fff;line-height:1.2;max-width:1100px;margin:0 auto}
 
   .board{flex:1;display:grid;grid-template-columns:1fr 1fr;grid-auto-rows:1fr;gap:clamp(6px,.9vh,14px);
@@ -105,7 +110,10 @@
   </div>
 
   <div id="game" style="display:none;flex-direction:column;flex:1;min-height:0">
-    <div class="qbanner"><div class="qlbl" id="qlbl"></div><div class="qtxt" id="qtxt"></div></div>
+    <div class="qbanner">
+      <div class="qlbl"><span id="qlbl"></span> <span id="qdiff" class="dbadge"></span></div>
+      <div class="qtxt" id="qtxt"></div>
+    </div>
     <div class="board" id="board"></div>
     <div class="dfoot"><div class="rtot" id="rtot"></div></div>
   </div>
@@ -197,8 +205,16 @@ function render(s){
   }).join('');
   prevRevealed = [...s.revealed];
 
-  const tot = s.revealed.reduce((t,i)=>t+(q.answers[i]?.points||0),0);
-  $('rtot').textContent = tot ? `${t('di_round')}: ${tot}` : '';
+  const dm = q.difficulty || 1;
+  const badge = $('qdiff');
+  badge.className = 'dbadge' + (dm > 1 ? ' on d' + dm : '');
+  badge.textContent = dm > 1 ? `×${dm} ${t('diff_' + dm)}` : '';
+
+  const base = s.revealed.reduce((t,i)=>t+(q.answers[i]?.points||0),0);
+  const tot = base * dm;
+  $('rtot').textContent = tot
+    ? (dm > 1 ? `${t('di_round')}: ${base} × ${dm} = ${tot}` : `${t('di_round')}: ${tot}`)
+    : '';
 }
 
 function esc(t){ return String(t).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c])); }

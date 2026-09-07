@@ -39,6 +39,8 @@ function validateSetPayload(body) {
   const clean = [];
   for (const q of qs) {
     const qt = String(q.question || '').trim();
+    let diff = parseInt(q.difficulty, 10);
+    if (!Number.isFinite(diff) || diff < 1 || diff > 3) diff = 1;
     if (qt.length < 5 || qt.length > 300) return { error: `Otázka musí mít 5–300 znaků: "${qt.slice(0, 30)}…"` };
     const ans = Array.isArray(q.answers) ? q.answers : [];
     if (ans.length < 2 || ans.length > 8) return { error: `Otázka "${qt.slice(0, 30)}…" musí mít 2–8 odpovědí.` };
@@ -51,7 +53,7 @@ function validateSetPayload(body) {
       ca.push({ text: t, points: p });
     }
     ca.sort((x, y) => y.points - x.points);
-    clean.push({ question: qt, answers: ca });
+    clean.push({ question: qt, difficulty: diff, answers: ca });
   }
   return { title, topic, grade, language, questions: clean };
 }

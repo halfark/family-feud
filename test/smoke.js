@@ -125,6 +125,22 @@ async function waitForServer(tries = 40) {
         `?lang=${lang} vrací jen ${lang} sady (${r.json?.sets?.length})`);
     }
 
+    section('Obtížnost otázek');
+    const setsAll = (await req('GET', '/api/sets')).json.sets;
+    const oneId = setsAll[0].id;
+    const detail = (await req('GET', '/api/sets/' + oneId)).json.set;
+    check(detail.questions.every(q => [1,2,3].includes(q.difficulty)),
+      'každá otázka má obtížnost 1–3');
+
+    // napříč databází musí být zastoupené všechny tři úrovně
+    const seen = new Set();
+    for (const st of setsAll.slice(0, 12)) {
+      const d = (await req('GET', '/api/sets/' + st.id)).json.set;
+      d.questions.forEach(q => seen.add(q.difficulty));
+    }
+    check(seen.has(1) && seen.has(2) && seen.has(3),
+      'databáze obsahuje snadné, střední i těžké otázky');
+
     section('CAPTCHA a registrace');
     const cap = await req('GET', '/api/auth/captcha');
     check(!!cap.json?.token && !!cap.json?.question, 'captcha se vygeneruje');
@@ -161,8 +177,11 @@ async function waitForServer(tries = 40) {
     const created = await req('POST', '/api/sets', { jar: 'user', body: {
       title: 'Testovací sada', topic: 'Test', grade: 'Grade 6–7 (A1–A2)',
       language: 'en', visibility: 'public',
-      questions: [{ question: 'Name a test answer.', answers: [
-        { text: 'Alpha', points: 60 }, { text: 'Beta', points: 40 }] }] } });
+      questions: [
+        { question: 'Name a test answer.', difficulty: 3, answers: [
+          { text: 'Alpha', points: 60 }, { text: 'Beta', points: 40 }] },
+        { question: 'Bad difficulty is clamped.', difficulty: 9, answers: [
+          { text: 'Alpha', points: 60 }, { text: 'Beta', points: 40 }] }] } });
     check(created.json?.ok === true, 'uživatel odešle sadu');
     const setId = created.json?.id;
 
@@ -187,6 +206,10 @@ async function waitForServer(tries = 40) {
 
     const pub2 = await req('GET', '/api/sets?q=Testovac%C3%AD');
     check((pub2.json?.sets || []).some(s => s.id === setId), 'schválená sada je veřejná');
+
+    const savedSet = (await req('GET', '/api/sets/' + setId, { jar: 'user' })).json.set;
+    check(savedSet.questions[0].difficulty === 3, 'zadaná obtížnost se uložila');
+    check(savedSet.questions[1].difficulty === 1, 'neplatná obtížnost spadne na 1');
 
     section('Hodnocení a statistiky');
     const anon = await req('POST', `/api/sets/${setId}/rating`, { body: { stars: 5 } });

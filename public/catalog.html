@@ -5,6 +5,13 @@
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Katalog / Catalogue</title>
 <link rel="stylesheet" href="/style.css">
+<style>
+  .dchip{font-size:.68rem;font-weight:700;border-radius:20px;padding:1px 8px;margin-left:.35rem;
+    letter-spacing:.5px;white-space:nowrap}
+  .dchip.d1{background:rgba(39,174,96,.16);color:#5fd08a}
+  .dchip.d2{background:rgba(245,197,24,.16);color:var(--gold)}
+  .dchip.d3{background:rgba(231,76,60,.16);color:#ff8a7a}
+</style>
 </head>
 <body>
 <div class="topbar"><div class="topbar-in">
@@ -132,7 +139,8 @@ async function openDetail(id) {
         <div class="card-title">${t('cat_qs')}</div>
         ${set.questions.map((q,i)=>`
           <div style="margin-bottom:.8rem">
-            <div style="font-weight:600">${i+1}. ${escapeHtml(q.question)}</div>
+            <div style="font-weight:600">${i+1}. ${escapeHtml(q.question)}
+              <span class="dchip d${q.difficulty||1}">×${q.difficulty||1} ${t('diff_'+(q.difficulty||1))}</span></div>
             <div style="font-size:.85rem;color:var(--muted);padding-left:1rem">
               ${q.answers.map(a=>`${escapeHtml(a.text)} <span style="color:var(--gold)">${a.points}</span>`).join(' · ')}
             </div>

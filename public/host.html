@@ -14,6 +14,15 @@
   .qbtn.used{opacity:.5}
   .qbtn.used .qmark{color:var(--green-br)}
   .qbtn .qmark{display:inline-block;min-width:20px;color:var(--gold);font-weight:600}
+  .qdot{display:inline-block;font-size:.68rem;font-weight:700;border-radius:3px;padding:0 4px;margin-right:2px}
+  .qdot.d1{background:rgba(39,174,96,.18);color:#5fd08a}
+  .qdot.d2{background:rgba(245,197,24,.18);color:var(--gold)}
+  .qdot.d3{background:rgba(231,76,60,.18);color:#ff8a7a}
+  .diffbadge{font-size:.75rem;font-weight:700;letter-spacing:1px;text-transform:uppercase;
+    border-radius:20px;padding:3px 10px;white-space:nowrap}
+  .diffbadge.d1{background:rgba(39,174,96,.18);color:#5fd08a}
+  .diffbadge.d2{background:rgba(245,197,24,.18);color:var(--gold)}
+  .diffbadge.d3{background:rgba(231,76,60,.18);color:#ff8a7a}
   .arow{display:flex;align-items:center;gap:.6rem;background:#0d1525;border:1px solid var(--line);
     border-radius:7px;padding:.5rem .8rem;transition:.15s;cursor:pointer}
   .arow:hover{border-color:var(--tile-line)}
@@ -90,14 +99,17 @@
           <button class="btn btn-ghost btn-sm" onclick="nextQ()" data-i18n="ho_next"></button>
         </div>
       </div>
-      <div id="qtext" style="font-size:1.35rem;font-weight:700;margin-bottom:1rem;color:#fff;line-height:1.25">
-        </div>
+      <div style="display:flex;align-items:flex-start;gap:.7rem;margin-bottom:1rem">
+        <div id="qtext" style="font-size:1.35rem;font-weight:700;color:#fff;line-height:1.25;flex:1"></div>
+        <span id="qdiff" class="diffbadge" title=""></span>
+      </div>
       <div id="arows" style="display:flex;flex-direction:column;gap:.4rem"></div>
       <div style="display:flex;gap:.5rem;margin-top:1rem;flex-wrap:wrap;align-items:center">
         <button class="btn btn-ghost btn-sm" onclick="revealAll()" data-i18n="ho_reveal_all"></button>
         <button class="btn btn-ghost btn-sm" onclick="hideAll()" data-i18n="ho_hide_all"></button>
         <span style="margin-left:auto;font-family:'Bebas Neue';font-size:1.6rem;color:var(--gold)">
-          <span data-i18n="ho_round"></span>: <span id="roundpts">0</span> <span data-i18n="ho_pts"></span></span>
+          <span data-i18n="ho_round"></span>: <span id="roundcalc" style="font-size:.8rem;color:var(--muted)"></span>
+          <span id="roundpts">0</span> <span data-i18n="ho_pts"></span></span>
       </div>
     </div>
 
@@ -239,8 +251,11 @@ async function loadSet(id){
 function renderQList(){
   document.getElementById('qlist').innerHTML = S.questions.map((q,i)=>{
     const used = S.used.includes(i);
+    const d = q.difficulty || 1;
     return `<button class="qbtn ${i===S.qi?'active':''} ${used?'used':''}" onclick="goQ(${i})">
-      <span class="qmark">${used?'✓':(i+1)+'.'}</span> ${escapeHtml(q.question)}</button>`;
+      <span class="qmark">${used?'✓':(i+1)+'.'}</span>
+      <span class="qdot d${d}" title="${t('diff_'+d)}">×${d}</span>
+      ${escapeHtml(q.question)}</button>`;
   }).join('');
   const c = document.getElementById('qcount');
   if(c) c.textContent = S.questions.length ? `${S.used.length}/${S.questions.length}` : '';
@@ -280,10 +295,12 @@ function addStrike(){
 }
 function clearStrikes(){ S.strikes=0; pushState(); }
 
-function roundPts(){
+function mult(){ return S.questions[S.qi]?.difficulty || 1; }
+function basePts(){
   const q=S.questions[S.qi]; if(!q) return 0;
   return S.revealed.reduce((s,i)=> s + (q.answers[i]?.points||0), 0);
 }
+function roundPts(){ return basePts() * mult(); }
 function awardRound(team){
   const p=roundPts(); if(!p){ err(t('ho_zero')); return; }
   S.scores[team]+=p; S.revealed=[]; S.strikes=0;
@@ -320,6 +337,14 @@ function renderHost(){
       <span class="k">${on ? t('ho_shown') : t('ho_key')+' '+(i+1)}</span></div>`;
   }).join('') : '';
 
+  const dm = mult();
+  const badge = document.getElementById('qdiff');
+  if(q){
+    badge.textContent = '×' + dm + ' ' + t('diff_' + dm);
+    badge.className = 'diffbadge d' + dm;
+    badge.title = t('diff_tip');
+  } else { badge.textContent=''; badge.className='diffbadge'; badge.title=''; }
+  document.getElementById('roundcalc').textContent = dm > 1 ? `${basePts()} × ${dm} =` : '';
   document.getElementById('roundpts').textContent = roundPts();
   document.getElementById('strikeTxt').textContent = `${S.strikes} / 3`;
   document.getElementById('t1score').textContent = S.scores[0];

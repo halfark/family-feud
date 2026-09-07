@@ -1,16 +1,25 @@
 // Kompaktní zápis sad otázek.
 //
 //   set('Název', 'Téma', 'Ročník',
-//     'Text otázky?|Odpověď:40|Další odpověď:32',
+//     'Text otázky?~2|Odpověď:40|Další odpověď:32',
 //     …)
+//
+// Za text otázky lze přidat ~1 až ~3 = obtížnost. Ta funguje jako násobič bodů
+// celé otázky (×1 snadná, ×2 střední, ×3 těžká). Body u odpovědí dál znamenají
+// četnost v anketě a sčítají se přibližně ke stovce.
 //
 // Odpovědi se zapisují jako "text:body", body 1–99. Server je stejně seřadí
 // sestupně, ale v datech je držíme rovnou od nejvyšší, ať se to dobře čte.
 
 function q(line) {
-  const [question, ...rest] = line.split('|');
+  const [head, ...rest] = line.split('|');
+  let question = head.trim();
+  let difficulty = 1;
+  const m = /~([123])$/.exec(question);
+  if (m) { difficulty = Number(m[1]); question = question.slice(0, m.index).trim(); }
   return {
-    question: question.trim(),
+    question,
+    difficulty,
     answers: rest.map(part => {
       const i = part.lastIndexOf(':');
       if (i < 1) throw new Error(`Chybí body u odpovědi: "${part}" (otázka: ${question})`);

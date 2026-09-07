@@ -170,6 +170,34 @@ Databázi tedy pro aktualizaci obsahu není potřeba mazat. Chování ověřuje
 `npm run test:upgrade`, který nasimuluje provoz (uživatel, vlastní sada, hodnocení,
 42 odehraných her) a zkontroluje, že to redeploy přežije.
 
+### Obtížnost otázek
+
+Každá otázka má obtížnost **×1 snadná / ×2 střední / ×3 těžká**, která funguje
+jako **násobič bodů celé otázky**. Body u jednotlivých odpovědí dál znamenají
+četnost v anketě a sčítají se přibližně ke stovce — díky násobiči tedy těžší
+otázka vynese víc, aniž by se rozbila logika Family Feud.
+
+| | Odhalené odpovědi | Body kola |
+|---|---|---|
+| `Jmenuj domácí zvíře.` (×1) | 100 | **100** |
+| `Jmenuj součást počítače.` (×3) | 100 | **300** |
+
+Obtížnost je vidět v panelu moderátora (odznak u otázky i v seznamu), na tabuli
+pro žáky a v detailu sady v katalogu. U vlastních sad se vybírá rozbalovátkem
+u každé otázky.
+
+Výchozí sady mají obtížnost odvozenou ze dvou kritérií:
+
+1. **Ročník** — starší žáci dostávají náročnější látku (1.–3. třída ×1,
+   4.–7. ×2, 8.–9. a starší ×3).
+2. **Rozptyl odpovědí** — když jedna odpověď posbírá 45 % a víc, je otázka
+   nasnadě a obtížnost klesá o stupeň. Naopak rozstřelené pole (nejlepší
+   odpověď pod 25 % při šesti a více možnostech) obtížnost zvedá, protože
+   se dá snadno minout.
+
+Rozložení vyjde zhruba na třetiny. Pokud ti u konkrétní otázky nesedí, přepiš
+`~1` / `~2` / `~3` za textem otázky v `seed-cs.js` nebo `seed-en.js`.
+
 ### Jak jsou sady zapsané
 
 Kvůli přehlednosti používají `seed-cs.js` a `seed-en.js` kompaktní zápis — jedna
@@ -177,11 +205,12 @@ otázka na řádek, odpovědi jako `text:body`:
 
 ```js
 set('Zvířata kolem nás', 'Přírodověda', '1.–3. třída',
-  'Jmenuj domácí zvíře.|Pes:34|Kočka:28|Králík:14|Křeček:10',
-  'Co nám dává kráva?|Mléko:52|Maso:24|Kůži:12|Hnůj:8',
+  'Jmenuj domácí zvíře.~1|Pes:34|Kočka:28|Králík:14|Křeček:10',
+  'Co nám dává kráva?~2|Mléko:52|Maso:24|Kůži:12|Hnůj:8',
   …)
 ```
 
+Značka `~1` až `~3` za textem otázky určuje obtížnost (bez ní platí ×1).
 Parser v `seed-util.js` zápis rozbalí a rovnou hlídá pravidla: minimálně 10 otázek
 na sadu, 2–8 odpovědí na otázku, body 1–99. Když něco nesedí, seed spadne
 s konkrétní chybou místo aby uložil rozbitou sadu.
@@ -273,7 +302,7 @@ npm run test:upgrade  # jen bezpečnost redeploye
 ```
 
 Smoke test (`test/smoke.js`) nastartuje server nad dočasnou databází a projde
-51 kontrol: seed a jeho idempotence, dostupnost všech stránek, oddělení jazyků,
+55 kontrol: seed a jeho idempotence, dostupnost všech stránek, oddělení jazyků,
 CAPTCHA, ověření e-mailu, moderační frontu, oprávnění, hodnocení, statistiky,
 zvukový engine a validaci. Upgrade test (`test/upgrade.js`) přidává dalších 14
 kontrol nad simulovanou nasazenou instancí.
