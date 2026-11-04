@@ -228,6 +228,20 @@ const DICT = {
   ad_t_reg:     { cs: 'Registrace',           en: 'Registered' },
   ad_verified:  { cs: 'ověřen',               en: 'verified' },
   ad_unverified:{ cs: 'neověřen',             en: 'unverified' },
+  ad_newuser:   { cs: 'Přidat uživatele',     en: 'Add user' },
+  ad_create:    { cs: 'Vytvořit',             en: 'Create' },
+  ad_as_admin:  { cs: 'Udělit práva administrátora', en: 'Grant administrator rights' },
+  ad_newuser_note: { cs: 'Účet je rovnou ověřený — žádný e-mail se neodesílá. Heslo předejte uživateli osobně, ať si ho sám změní.',
+                     en: 'The account is verified right away — no e-mail is sent. Hand the password over in person so the user can change it.' },
+  ad_nomail:    { cs: 'Odesílání e-mailů není nastavené (chybí SMTP_HOST), takže registrace zvenčí nedojdou do konce. Účty zakládejte zde — budou rovnou ověřené.',
+                  en: 'E-mail sending is not configured (SMTP_HOST is missing), so self-registration cannot be completed. Create accounts here instead — they are verified right away.' },
+  ad_do_verify: { cs: 'Ověřit',               en: 'Verify' },
+  ad_do_pass:   { cs: 'Heslo',                en: 'Password' },
+  ad_do_admin:  { cs: '+ Admin',              en: '+ Admin' },
+  ad_do_unadmin:{ cs: '− Admin',              en: '− Admin' },
+  ad_pass_prompt: { cs: 'Nové heslo (min. 8 znaků):', en: 'New password (min. 8 characters):' },
+  ad_user_del_conf: { cs: 'Opravdu smazat tento účet? Hodnocení uživatele se smažou, jeho sady zůstanou.',
+                      en: 'Really delete this account? The user\u2019s ratings will be deleted, their sets will remain.' },
 
 
   // --- zvuky ---

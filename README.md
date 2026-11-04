@@ -111,6 +111,24 @@ Sada od běžného uživatele jde vždy do stavu `pending`. Admin ji v `/admin.h
 
 Editace už schválené sady ji vrací zpět ke schválení.
 
+### Správa uživatelů
+
+V `/admin.html` → **Uživatelé** může admin:
+
+- **založit účet** (jméno, e-mail, heslo) — je **rovnou ověřený**, takže funguje
+  i bez nastaveného SMTP a žádný e-mail se neodesílá,
+- **ověřit ručně** účet, který se zaregistroval sám a čeká na e-mail,
+- **změnit heslo**, udělit nebo odebrat práva administrátora, účet smazat.
+
+Když SMTP není nastavené, admin to uvidí jako upozornění přímo nad seznamem.
+Pojistky: nelze smazat vlastní účet, odebrat si vlastní práva ani zrušit
+posledního administrátora. Smazáním uživatele zmizí jeho hodnocení, ale sady
+zůstanou.
+
+> Bez SMTP se zvenčí nikdo nezaregistruje do konce — ověřovací odkaz se jen
+> vypíše do logu serveru. Dokud nemáš vyřešené odesílání pošty, zakládej účty
+> tímto formulářem.
+
 ---
 
 ## Databáze otázek
@@ -302,7 +320,7 @@ npm run test:upgrade  # jen bezpečnost redeploye
 ```
 
 Smoke test (`test/smoke.js`) nastartuje server nad dočasnou databází a projde
-55 kontrol: seed a jeho idempotence, dostupnost všech stránek, oddělení jazyků,
+66 kontrol: seed a jeho idempotence, dostupnost všech stránek, oddělení jazyků,
 CAPTCHA, ověření e-mailu, moderační frontu, oprávnění, hodnocení, statistiky,
 zvukový engine a validaci. Upgrade test (`test/upgrade.js`) přidává dalších 14
 kontrol nad simulovanou nasazenou instancí.
@@ -385,6 +403,8 @@ zvuky ani otázky.
 | POST | `/api/sets/:id/rating` | ověřený uživatel |
 | GET | `/api/stats` | veřejné |
 | GET | `/api/admin/queue` · `/api/admin/users` | admin |
+| POST | `/api/admin/users` · `/api/admin/users/:id/verify` · `/api/admin/users/:id/password` · `/api/admin/users/:id/admin` | admin |
+| DELETE | `/api/admin/users/:id` | admin |
 | POST | `/api/admin/sets/:id/review` · `/api/admin/sets/:id/visibility` | admin |
 
 Rate limiting je aktivní na registraci, přihlášení, vytváření sad a hodnocení.

@@ -356,7 +356,83 @@ app.get('/api/admin/users', A.requireAuth, A.requireAdmin, (req, res) => {
   const rows = db.prepare(`SELECT u.id, u.email, u.display_name, u.is_admin, u.verified, u.created_at,
     (SELECT COUNT(*) FROM sets s WHERE s.author_id = u.id) AS set_count
     FROM users u ORDER BY u.created_at DESC LIMIT 300`).all();
-  res.json({ users: rows });
+  res.json({ users: rows, mailEnabled: A.MAIL_ENABLED });
+});
+
+// Založení uživatele adminem — účet je rovnou ověřený, takže funguje
+// i bez nastaveného SMTP (žádný ověřovací e-mail se neodesílá).
+app.post('/api/admin/users', A.requireAuth, A.requireAdmin, (req, res) => {
+  const email = String(req.body?.email || '').trim().toLowerCase();
+  const name = String(req.body?.displayName || '').trim();
+  const password = String(req.body?.password || '');
+  const isAdmin = req.body?.isAdmin ? 1 : 0;
+
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(email))
+    return res.status(400).json({ error: 'Neplatná e-mailová adresa.' });
+  if (name.length < 2 || name.length > 60)
+    return res.status(400).json({ error: 'Jméno musí mít 2–60 znaků.' });
+  if (password.length < 8)
+    return res.status(400).json({ error: 'Heslo musí mít alespoň 8 znaků.' });
+  if (db.prepare('SELECT id FROM users WHERE email = ?').get(email))
+    return res.status(409).json({ error: 'Tento e-mail už je zaregistrovaný.' });
+
+  const info = db.prepare(`INSERT INTO users
+    (email, password_hash, display_name, is_admin, verified, created_at)
+    VALUES (?,?,?,?,1,?)`)
+    .run(email, bcrypt.hashSync(password, 10), name, isAdmin, Date.now());
+
+  res.json({ ok: true, id: info.lastInsertRowid,
+    message: `Účet ${email} byl vytvořen a je rovnou ověřený.` });
+});
+
+// Ruční ověření účtu, který čeká na e-mail
+app.post('/api/admin/users/:id/verify', A.requireAuth, A.requireAdmin, (req, res) => {
+  const u = db.prepare('SELECT * FROM users WHERE id = ?').get(req.params.id);
+  if (!u) return res.status(404).json({ error: 'Uživatel nenalezen.' });
+  db.prepare(`UPDATE users SET verified = 1, verify_token = NULL,
+              verify_expires = NULL WHERE id = ?`).run(u.id);
+  res.json({ ok: true, message: `Účet ${u.email} byl ověřen.` });
+});
+
+// Nastavení nového hesla (když si ho uživatel nepamatuje a nechodí maily)
+app.post('/api/admin/users/:id/password', A.requireAuth, A.requireAdmin, (req, res) => {
+  const u = db.prepare('SELECT * FROM users WHERE id = ?').get(req.params.id);
+  if (!u) return res.status(404).json({ error: 'Uživatel nenalezen.' });
+  const password = String(req.body?.password || '');
+  if (password.length < 8)
+    return res.status(400).json({ error: 'Heslo musí mít alespoň 8 znaků.' });
+  db.prepare('UPDATE users SET password_hash = ? WHERE id = ?')
+    .run(bcrypt.hashSync(password, 10), u.id);
+  res.json({ ok: true, message: `Heslo účtu ${u.email} bylo změněno.` });
+});
+
+// Udělení / odebrání práv administrátora
+app.post('/api/admin/users/:id/admin', A.requireAuth, A.requireAdmin, (req, res) => {
+  const u = db.prepare('SELECT * FROM users WHERE id = ?').get(req.params.id);
+  if (!u) return res.status(404).json({ error: 'Uživatel nenalezen.' });
+  const makeAdmin = req.body?.isAdmin ? 1 : 0;
+  if (!makeAdmin && u.id === req.user.id)
+    return res.status(400).json({ error: 'Nemůžete si odebrat vlastní práva administrátora.' });
+  if (!makeAdmin) {
+    const others = db.prepare('SELECT COUNT(*) c FROM users WHERE is_admin = 1 AND id != ?').get(u.id).c;
+    if (!others) return res.status(400).json({ error: 'Musí zůstat alespoň jeden administrátor.' });
+  }
+  db.prepare('UPDATE users SET is_admin = ? WHERE id = ?').run(makeAdmin, u.id);
+  res.json({ ok: true, isAdmin: !!makeAdmin });
+});
+
+app.delete('/api/admin/users/:id', A.requireAuth, A.requireAdmin, (req, res) => {
+  const u = db.prepare('SELECT * FROM users WHERE id = ?').get(req.params.id);
+  if (!u) return res.status(404).json({ error: 'Uživatel nenalezen.' });
+  if (u.id === req.user.id)
+    return res.status(400).json({ error: 'Nemůžete smazat vlastní účet.' });
+  if (u.is_admin) {
+    const others = db.prepare('SELECT COUNT(*) c FROM users WHERE is_admin = 1 AND id != ?').get(u.id).c;
+    if (!others) return res.status(400).json({ error: 'Musí zůstat alespoň jeden administrátor.' });
+  }
+  // sady uživatele zůstanou (author_id → NULL), hodnocení se smažou s ním
+  db.prepare('DELETE FROM users WHERE id = ?').run(u.id);
+  res.json({ ok: true, message: `Účet ${u.email} byl smazán.` });
 });
 
 // =============================================================== STATIC =====

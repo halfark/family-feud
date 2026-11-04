@@ -138,15 +138,79 @@ async function del(id){
 async function loadUsers(){
   const el=document.getElementById('content');
   el.innerHTML=`<div class="empty">${t('loading')}</div>`;
-  const { users } = await api.get('/api/admin/users');
-  el.innerHTML = `<div class="card"><table class="tbl">
-    <tr><th>${t('ad_t_name')}</th><th>${t('au_email')}</th><th>${t('ad_t_state')}</th><th>${t('ad_t_sets')}</th><th>${t('ad_t_reg')}</th></tr>
+  const { users, mailEnabled } = await api.get('/api/admin/users');
+
+  el.innerHTML = `
+    ${mailEnabled ? '' : `<div class="card" style="border-color:var(--gold);margin-bottom:1rem">
+      <div style="font-size:.9rem;color:var(--gold);line-height:1.6">⚠ ${t('ad_nomail')}</div></div>`}
+
+    <div class="card" style="margin-bottom:1rem">
+      <div class="card-title">${t('ad_newuser')}</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr 1fr auto;gap:.6rem;align-items:end">
+        <div><label class="lbl">${t('au_name')}</label>
+          <input class="input" id="nu-name"></div>
+        <div><label class="lbl">${t('au_email')}</label>
+          <input class="input" id="nu-email" type="email"></div>
+        <div><label class="lbl">${t('au_pass_new')}</label>
+          <input class="input" id="nu-pass" type="text"></div>
+        <button class="btn btn-gold" onclick="createUser()">${t('ad_create')}</button>
+      </div>
+      <label style="display:block;margin-top:.6rem;font-size:.85rem;color:var(--muted);cursor:pointer">
+        <input type="checkbox" id="nu-admin"> ${t('ad_as_admin')}</label>
+      <p style="font-size:.8rem;color:var(--faint);margin-top:.5rem">${t('ad_newuser_note')}</p>
+    </div>
+
+    <div class="card"><table class="tbl">
+    <tr><th>${t('ad_t_name')}</th><th>${t('au_email')}</th><th>${t('ad_t_state')}</th>
+        <th>${t('ad_t_sets')}</th><th>${t('ad_t_reg')}</th><th></th></tr>
     ${users.map(u=>`<tr>
       <td>${escapeHtml(u.display_name)} ${u.is_admin?'<span class="badge gold">admin</span>':''}</td>
       <td style="color:var(--muted)">${escapeHtml(u.email)}</td>
       <td>${u.verified?`<span class="badge green">${t('ad_verified')}</span>`:`<span class="badge grey">${t('ad_unverified')}</span>`}</td>
       <td>${u.set_count}</td><td style="color:var(--muted)">${fmtDate(u.created_at)}</td>
+      <td style="white-space:nowrap;text-align:right">
+        ${u.verified?'':`<button class="btn btn-green btn-sm" onclick="verifyUser(${u.id})">${t('ad_do_verify')}</button>`}
+        <button class="btn btn-ghost btn-sm" onclick="resetPass(${u.id})">${t('ad_do_pass')}</button>
+        <button class="btn btn-ghost btn-sm" onclick="toggleAdmin(${u.id},${u.is_admin?0:1})"
+          >${u.is_admin?t('ad_do_unadmin'):t('ad_do_admin')}</button>
+        <button class="btn btn-red btn-sm" onclick="delUser(${u.id})">✕</button>
+      </td>
     </tr>`).join('')}</table></div>`;
+}
+
+async function createUser(){
+  try{
+    const r = await api.post('/api/admin/users', {
+      displayName: document.getElementById('nu-name').value,
+      email: document.getElementById('nu-email').value,
+      password: document.getElementById('nu-pass').value,
+      isAdmin: document.getElementById('nu-admin').checked,
+    });
+    ok(r.message); loadUsers(); loadMetrics();
+  }catch(e){ err(e.message); }
+}
+
+async function verifyUser(id){
+  try{ const r = await api.post(`/api/admin/users/${id}/verify`); ok(r.message); loadUsers(); loadMetrics(); }
+  catch(e){ err(e.message); }
+}
+
+async function resetPass(id){
+  const p = prompt(t('ad_pass_prompt'));
+  if(p===null) return;
+  try{ const r = await api.post(`/api/admin/users/${id}/password`,{password:p}); ok(r.message); }
+  catch(e){ err(e.message); }
+}
+
+async function toggleAdmin(id, isAdmin){
+  try{ await api.post(`/api/admin/users/${id}/admin`,{isAdmin}); ok('OK'); loadUsers(); }
+  catch(e){ err(e.message); }
+}
+
+async function delUser(id){
+  if(!confirm(t('ad_user_del_conf'))) return;
+  try{ const r = await api.del('/api/admin/users/'+id); ok(r.message); loadUsers(); loadMetrics(); }
+  catch(e){ err(e.message); }
 }
 
 (async()=>{

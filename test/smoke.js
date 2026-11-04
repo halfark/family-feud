@@ -211,6 +211,48 @@ async function waitForServer(tries = 40) {
     check(savedSet.questions[0].difficulty === 3, 'zadaná obtížnost se uložila');
     check(savedSet.questions[1].difficulty === 1, 'neplatná obtížnost spadne na 1');
 
+    section('Správa uživatelů adminem');
+    const made = await req('POST', '/api/admin/users', { jar: 'admin', body: {
+      displayName: 'Jana Nová', email: 'jana@test.cz', password: 'heslo1234' } });
+    check(made.json?.ok === true, 'admin založí uživatele');
+
+    const janaLogin = await req('POST', '/api/auth/login', { jar: 'jana',
+      body: { email: 'jana@test.cz', password: 'heslo1234' } });
+    check(janaLogin.json?.ok === true, 'založený účet se přihlásí bez ověřovacího e-mailu');
+
+    const janaSet = await req('POST', '/api/sets', { jar: 'jana', body: {
+      title: 'Sada od Jany', topic: 'Test', grade: '4.–5. třída', language: 'cs',
+      questions: [{ question: 'Testovací otázka?', answers: [
+        { text: 'A', points: 60 }, { text: 'B', points: 40 }] }] } });
+    check(janaSet.json?.ok === true, 'založený účet je rovnou ověřený (smí odeslat sadu)');
+
+    const list = await req('GET', '/api/admin/users', { jar: 'admin' });
+    check(list.json?.mailEnabled === false, 'admin vidí, že SMTP není nastavené');
+
+    // ruční ověření účtu, který čeká na e-mail
+    const waiting = list.json.users.find(u => u.email === 'ucitel@test.cz');
+    check(!!waiting, 'samoregistrovaný účet je v seznamu');
+    const manualVer = await req('POST', `/api/admin/users/${waiting.id}/verify`, { jar: 'admin' });
+    check(manualVer.json?.ok === true, 'admin ověří účet ručně');
+
+    const pw = await req('POST', `/api/admin/users/${waiting.id}/password`, { jar: 'admin',
+      body: { password: 'zcelanovaheslo' } });
+    check(pw.json?.ok === true, 'admin změní heslo');
+    const relog = await req('POST', '/api/auth/login', {
+      body: { email: 'ucitel@test.cz', password: 'zcelanovaheslo' } });
+    check(relog.json?.ok === true, 'uživatel se přihlásí novým heslem');
+
+    const me = list.json.users.find(u => u.is_admin);
+    const selfDemote = await req('POST', `/api/admin/users/${me.id}/admin`, { jar: 'admin',
+      body: { isAdmin: false } });
+    check(selfDemote.status === 400, 'admin si nemůže odebrat vlastní práva');
+    const selfDel = await req('DELETE', `/api/admin/users/${me.id}`, { jar: 'admin' });
+    check(selfDel.status === 400, 'admin nemůže smazat vlastní účet');
+
+    const notAdmin = await req('POST', '/api/admin/users', { jar: 'jana', body: {
+      displayName: 'Hack', email: 'hack@test.cz', password: 'heslo1234' } });
+    check(notAdmin.status === 403, 'běžný uživatel nemůže zakládat účty');
+
     section('Hodnocení a statistiky');
     const anon = await req('POST', `/api/sets/${setId}/rating`, { body: { stars: 5 } });
     check(anon.status === 401, 'anonym nemůže hodnotit');
